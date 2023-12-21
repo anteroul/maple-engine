@@ -13,10 +13,6 @@ find_package(glfw3 REQUIRED)
 include_directories(${GLFW_INCLUDE_DIRS})
 link_libraries(${GLFW_LIBRARY_DIRS})
 
-find_package(Freetype REQUIRED)
-include_directories(${FREETYPE_INCLUDE_DIRS})
-link_libraries(${FREETYPE_LIBRARY_DIRS})
-
 add_subdirectory(3rd_party/Box2D-cmake)
 
 add_executable(MapleEngine
@@ -46,4 +42,4 @@ add_executable(MapleEngine
         src/structs/cursor.h
 )
 
-target_link_libraries(MapleEngine PUBLIC ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${FREETYPE_LIBRARIES} ${lib/stb_image.h} -lglfw anteroul::Box2D)
+target_link_libraries(MapleEngine PUBLIC ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${lib/stb_image.h} -lglfw anteroul::Box2D)

@@ -3,9 +3,9 @@
 
 #include "../Component.h"
 
-class PlayerInput : public Component {
+class UserInput : public Component {
 public:
-    PlayerInput(Entity &owner, float speed);
+    UserInput(Entity &owner, float speed);
     void update(GLFWwindow* window, float deltaTime) override;
 private:
     float m_Speed;

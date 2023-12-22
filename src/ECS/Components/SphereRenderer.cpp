@@ -7,7 +7,7 @@
 /// \param colour Sphere colour
 SphereRenderer::SphereRenderer(Entity& owner, glm::vec3 colour) : Component(owner)
 {
-    m_Radius = owner.size.x / 2;
+    m_Radius = (owner.size.x + owner.size.y) / 2;
     m_Quadric = gluNewQuadric();
     m_Colour = colour;
 }

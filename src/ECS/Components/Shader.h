@@ -5,7 +5,7 @@
 
 class Shader : public Component {
 public:
-    Shader(Entity &owner, const std::string &path);
+    Shader(Entity &owner, const std::string &path) : Component(owner) {}
 };
 
 

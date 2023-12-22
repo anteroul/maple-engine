@@ -1,8 +1,8 @@
 #include "Scene.h"
-#include "ECS/Components/PlayerInput.h"
+#include "ECS/Components/UserInput.h"
 #include "ECS/Components/BoxRenderer.h"
 #include "ECS/Components/SphereRenderer.h"
-#include "ECS/Components/MousePosition.h"
+#include "ECS/Components/MouseFollow.h"
 #include "ECS/Components/Gravity.h"
 
 Scene Scene::gameInstance;
@@ -22,12 +22,12 @@ void Scene::initialize()
     auto ball = new Entity(world, b2Vec2(-0.2f, 0.2f), b2Vec2(0.2f, -0.2f));
     ball->setName("ball");
     ball->addTag("Player");
-    ball->addComponent(new PlayerInput(*ball, 0.018f));
+    ball->addComponent(new UserInput(*ball, 0.45f));
     ball->addComponent(new SphereRenderer(*ball, {0.f, 1.f, 1.f}));
 
     auto cursor = new Entity(world, b2Vec2(-0.01f, -0.01f), b2Vec2(0.01f, 0.01f));
     cursor->setName("cursor");
-    cursor->addComponent(new MousePosition(*cursor));
+    cursor->addComponent(new MouseFollow(*cursor, NULL));
     cursor->addComponent(new BoxRenderer(*cursor, {1.f, 0.f, 0.f}));
 
     auto rec = new Entity(world, b2Vec2(-0.8f, 0.5f), b2Vec2(-0.5f, 0.2f));
@@ -38,17 +38,19 @@ void Scene::initialize()
     another_rec->setName("rectangle");
     another_rec->addComponent(new BoxRenderer(*another_rec, {1.f, 0.5f, 0.f}));
 
-    auto sphere = new Entity(world, b2Vec2(0.f, -0.2f), b2Vec2(0.4f, 0.2f));
+    auto sphere = new Entity(world, b2Vec2(0.f, 0.f), b2Vec2(0.2f, 0.2f));
     sphere->addComponent(new SphereRenderer(*sphere, {1.f, 0.f, 1.f}));
+    sphere->addComponent(new MouseFollow(*sphere, 0.17f));
 
     auto ground = new Entity(world, b2Vec2(-2.f, -0.4f), b2Vec2(2.f, -0.8f));
     ground->setName("ground");
     ground->addComponent(new BoxRenderer(*ground, {1.f, 1.f, 0.f}));
+    ground->addComponent(new UserInput(*ground, 4.5f));
 
-    ball->addComponent(new Gravity(*ball, *ground, world));
-    rec->addComponent(new Gravity(*rec, *ground, world));
-    another_rec->addComponent(new Gravity(*another_rec, *ground, world));
-    sphere->addComponent(new Gravity(*sphere, *ground, world));
+    ball->addComponent(new RigidBody(*ball, *ground, world));
+    rec->addComponent(new RigidBody(*rec, *ground, world));
+    another_rec->addComponent(new RigidBody(*another_rec, *ground, world));
+    sphere->addComponent(new RigidBody(*sphere, *ground, world));
 
     entities.push_back(ball);
     entities.push_back(rec);
@@ -78,7 +80,7 @@ void Scene::update(GLFWwindow* window, float deltaTime)
                         b2Vec2(cursor->body->GetPosition().x + 0.2f, cursor->body->GetPosition().y - 0.2f)
                 );
 
-        gameObject->addComponent(new Gravity(*gameObject, *ground, physics.getWorld()));
+        gameObject->addComponent(new RigidBody(*gameObject, *ground, physics.getWorld()));
         gameObject->addComponent(new BoxRenderer(*gameObject, {1.f, 0.f, 0.f}));
         entities.push_back(gameObject);
     }

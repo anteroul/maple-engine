@@ -31,7 +31,6 @@ public:
             if (componentCast != nullptr)
                 return componentCast;
         }
-
         return nullptr;
     }
     void addComponent(Component* component);

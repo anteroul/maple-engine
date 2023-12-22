@@ -3,10 +3,14 @@
 
 #include "../Component.h"
 
-class MousePosition : public Component {
+class MouseFollow : public Component {
 public:
-    explicit MousePosition(Entity& owner);
+    MouseFollow(Entity& owner, float speed) : Component(owner) {
+        m_Speed = speed;
+    }
     void update(GLFWwindow* window, float deltaTime) override;
+private:
+    float m_Speed;
 };
 
 

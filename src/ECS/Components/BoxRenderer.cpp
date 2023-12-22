@@ -21,10 +21,10 @@ void BoxRenderer::render() const
     glBegin(GL_QUADS);
     glTranslatef(position.x, position.y, 0.f);
     glColor3f(m_Colour.r, m_Colour.g, m_Colour.b);
-    glVertex2f(position.x - m_Size.x / 2, position.y - m_Size.y / 2);
-    glVertex2f(position.x - m_Size.x / 2, position.y + m_Size.y / 2);
-    glVertex2f(position.x + m_Size.x / 2, position.y + m_Size.y / 2);
-    glVertex2f(position.x + m_Size.x / 2, position.y - m_Size.y / 2);
+    glVertex2f(position.x - m_Size.x / 2, position.y - m_Size.y);
+    glVertex2f(position.x - m_Size.x / 2, position.y);
+    glVertex2f(position.x + m_Size.x / 2, position.y);
+    glVertex2f(position.x + m_Size.x / 2, position.y - m_Size.y);
     glEnd();
     glFlush();
 }

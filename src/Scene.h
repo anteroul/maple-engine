@@ -4,7 +4,6 @@
 #include "Physics.h"
 #include "ECS/Entity.h"
 #include <GLFW/glfw3.h>
-#include <algorithm>
 #include <iostream>
 #include <list>
 #include <map>

@@ -1,11 +1,12 @@
 #include "Gravity.h"
 
-#define GRAVITY (9.81 / 10000)
+#define GRAVITY (9.81 / 1000)
 
-void Gravity::update(GLFWwindow *window, float deltaTime)
+void RigidBody::update(GLFWwindow *window, float deltaTime)
 {
     b2Body* body = getBody();
     float timeStep = 1.0f / 60.0f;
+    float fallingSpeed = GRAVITY * deltaTime;
     int32 velocityIterations = 6;
     int32 positionIterations = 2;
 
@@ -17,9 +18,9 @@ void Gravity::update(GLFWwindow *window, float deltaTime)
         float height = m_Owner->size.y;
         float bottom = position.y - height;
 
-        if (bottom < ground->body->GetPosition().y)
-            body->SetTransform(b2Vec2(position.x, position.y + GRAVITY), angle);
+        if (bottom < ground->body->GetPosition().y && bottom > ground->body->GetPosition().y - ground->size.y)
+            body->SetTransform(b2Vec2(position.x, position.y + fallingSpeed), angle);
         else
-            body->SetTransform(b2Vec2(position.x, position.y - GRAVITY), angle);
+            body->SetTransform(b2Vec2(position.x, position.y - fallingSpeed), angle);
     }
 }

@@ -3,9 +3,9 @@
 
 #include "../Component.h"
 
-class Gravity : public Component {
+class RigidBody : public Component {
 public:
-    Gravity(Entity& owner, Entity& groundEntity, b2World& world) : Component(owner)
+    RigidBody(Entity& owner, Entity& groundEntity, b2World& world) : Component(owner)
     {
         m_Owner = &owner;
         ground = &groundEntity;

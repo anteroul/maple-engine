@@ -27,17 +27,16 @@ add_executable(MapleEngine
         src/ECS/Entity.cpp
         src/ECS/Entity.h
         src/ECS/Component.h
-        src/ECS/Components/PlayerInput.cpp
-        src/ECS/Components/PlayerInput.h
+        src/ECS/Components/UserInput.cpp
+        src/ECS/Components/UserInput.h
         src/ECS/Components/BoxRenderer.cpp
         src/ECS/Components/BoxRenderer.h
         src/ECS/Components/SphereRenderer.cpp
         src/ECS/Components/SphereRenderer.h
-        src/ECS/Components/MousePosition.cpp
-        src/ECS/Components/MousePosition.h
+        src/ECS/Components/MouseFollow.cpp
+        src/ECS/Components/MouseFollow.h
         src/ECS/Components/Gravity.cpp
         src/ECS/Components/Gravity.h
-        src/ECS/Components/Shader.cpp
         src/ECS/Components/Shader.h
 )
 

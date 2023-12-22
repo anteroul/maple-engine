@@ -1,5 +1,5 @@
 #include "UserInput.h"
-#include "Gravity.h"
+#include "RigidBody.h"
 
 /// \param owner Entity containing this component
 /// \param speed Movement speed

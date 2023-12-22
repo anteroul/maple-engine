@@ -35,8 +35,8 @@ add_executable(MapleEngine
         src/ECS/Components/SphereRenderer.h
         src/ECS/Components/MouseFollow.cpp
         src/ECS/Components/MouseFollow.h
-        src/ECS/Components/Gravity.cpp
-        src/ECS/Components/Gravity.h
+        src/ECS/Components/RigidBody.cpp
+        src/ECS/Components/RigidBody.h
         src/ECS/Components/Shader.h
 )
 

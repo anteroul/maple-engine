@@ -3,7 +3,7 @@
 #include "ECS/Components/BoxRenderer.h"
 #include "ECS/Components/SphereRenderer.h"
 #include "ECS/Components/MouseFollow.h"
-#include "ECS/Components/Gravity.h"
+#include "ECS/Components/RigidBody.h"
 
 Scene Scene::gameInstance;
 
@@ -47,10 +47,10 @@ void Scene::initialize()
     ground->addComponent(new BoxRenderer(*ground, {1.f, 1.f, 0.f}));
     ground->addComponent(new UserInput(*ground, 4.5f));
 
-    ball->addComponent(new RigidBody(*ball, *ground, world));
-    rec->addComponent(new RigidBody(*rec, *ground, world));
-    another_rec->addComponent(new RigidBody(*another_rec, *ground, world));
-    sphere->addComponent(new RigidBody(*sphere, *ground, world));
+    ball->addComponent(new RigidBody(*ball, *ground));
+    rec->addComponent(new RigidBody(*rec, *ground));
+    another_rec->addComponent(new RigidBody(*another_rec, *ground));
+    sphere->addComponent(new RigidBody(*sphere, *ground));
 
     entities.push_back(ball);
     entities.push_back(rec);
@@ -66,8 +66,6 @@ void Scene::initialize()
 /// Update all entites
 void Scene::update(GLFWwindow* window, float deltaTime)
 {
-    physics.update(deltaTime);
-
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
     {
         auto cursor = getEntityWithName("cursor");
@@ -80,13 +78,17 @@ void Scene::update(GLFWwindow* window, float deltaTime)
                         b2Vec2(cursor->body->GetPosition().x + 0.2f, cursor->body->GetPosition().y - 0.2f)
                 );
 
-        gameObject->addComponent(new RigidBody(*gameObject, *ground, physics.getWorld()));
+        gameObject->addComponent(new RigidBody(*gameObject, *ground));
         gameObject->addComponent(new BoxRenderer(*gameObject, {1.f, 0.f, 0.f}));
         entities.push_back(gameObject);
     }
 
     for (auto entity : entities)
+    {
+        if (entity->getComponment<RigidBody>())
+            physics.update(entity, deltaTime);
         entity->update(window, deltaTime);
+    }
 }
 
 /// Render all entities

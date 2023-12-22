@@ -1,5 +1,5 @@
 #include "MouseFollow.h"
-#include "Gravity.h"
+#include "RigidBody.h"
 
 /// Sets the entity position as current cursor position.
 /// \param window OpenGL window context.

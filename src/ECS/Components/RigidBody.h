@@ -5,16 +5,14 @@
 
 class RigidBody : public Component {
 public:
-    RigidBody(Entity& owner, Entity& groundEntity, b2World& world) : Component(owner)
+    RigidBody(Entity& owner, Entity& groundEntity) : Component(owner)
     {
         m_Owner = &owner;
         ground = &groundEntity;
-        m_World = &world;
     }
     void update(GLFWwindow* window, float deltaTime) override;
 private:
     Entity* m_Owner;
-    b2World* m_World;
     Entity* ground;
 };
 

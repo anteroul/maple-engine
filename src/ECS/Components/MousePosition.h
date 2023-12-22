@@ -5,7 +5,7 @@
 
 class MousePosition : public Component {
 public:
-    MousePosition(Entity& owner);
+    explicit MousePosition(Entity& owner);
     void update(GLFWwindow* window, float deltaTime) override;
 };
 

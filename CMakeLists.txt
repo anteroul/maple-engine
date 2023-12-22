@@ -39,7 +39,6 @@ add_executable(MapleEngine
         src/ECS/Components/Gravity.h
         src/ECS/Components/Shader.cpp
         src/ECS/Components/Shader.h
-        src/structs/cursor.h
 )
 
 target_link_libraries(MapleEngine PUBLIC ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${lib/stb_image.h} -lglfw anteroul::Box2D)

@@ -9,8 +9,8 @@ public:
     virtual ~Component() {}
     /// Component life cycle
     virtual void initialize() {}
-    virtual void render() const {};
-    virtual void update(GLFWwindow* glfWwindow, float deltaTime) {};
+    virtual void render() const {}
+    virtual void update(GLFWwindow* glfWwindow, float deltaTime) {}
 
     Entity& getEntity() { return m_Owner; }
     void setBody(b2Body* body) { m_Owner.body = body; }

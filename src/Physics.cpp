@@ -10,7 +10,6 @@ void Physics::update(Entity* entity, float deltaTime)
     b2Body* body = entity->body;
     b2Vec2 position = body->GetPosition();
     float angle = body->GetAngle();
-    float fallingSpeed = GRAVITY * deltaTime;
 
     while (accumulator >= getStepSize())
     {
@@ -19,5 +18,11 @@ void Physics::update(Entity* entity, float deltaTime)
         world.Step(getStepSize(), getVelocitySolverIterations(), getPositionSolverIterations());
     }
     accumulator += deltaTime;
+    float fallingSpeed = GRAVITY * deltaTime;
     body->SetTransform(b2Vec2(position.x, position.y - fallingSpeed), angle);
+}
+
+float Physics::getGravity(float deltaTime)
+{
+    return GRAVITY * deltaTime;
 }

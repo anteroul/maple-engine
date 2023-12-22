@@ -13,6 +13,7 @@ public:
     void update(Entity* entity, float deltaTime);
     /// \return reference to game world
     b2World& getWorld() { return world; }
+    static float getGravity(float deltaTime);
 private:
     static float getStepSize() { return 1.f/60.f; }
     static int getVelocitySolverIterations() { return 8.f; }

@@ -19,26 +19,24 @@ void Scene::initialize()
 {
     b2World& world = physics.getWorld();
 
+    /*
     auto ball = new Entity(world, b2Vec2(-0.2f, 0.2f), b2Vec2(0.2f, -0.2f));
     ball->setName("ball");
     ball->addTag("Player");
     ball->addComponent(new UserInput(*ball, 0.45f));
     ball->addComponent(new SphereRenderer(*ball, {0.f, 1.f, 1.f}));
+    */
 
     auto cursor = new Entity(world, b2Vec2(-0.01f, -0.01f), b2Vec2(0.01f, 0.01f));
     cursor->setName("cursor");
     cursor->addComponent(new MouseFollow(*cursor, NULL));
     cursor->addComponent(new BoxRenderer(*cursor, {1.f, 0.f, 0.f}));
 
-    auto rec = new Entity(world, b2Vec2(-0.8f, 0.5f), b2Vec2(-0.5f, 0.2f));
+    auto rec = new Entity(world, b2Vec2(-0.8f, 0.6f), b2Vec2(-0.5f, 0.2f));
     rec->setName("rectangle");
     rec->addComponent(new BoxRenderer(*rec, {0.f, 1.f, 0.f}));
 
-    auto another_rec = new Entity(world, b2Vec2(0.7f, 0.6f), b2Vec2(0.9f, 0.2f));
-    another_rec->setName("rectangle");
-    another_rec->addComponent(new BoxRenderer(*another_rec, {1.f, 0.5f, 0.f}));
-
-    auto sphere = new Entity(world, b2Vec2(0.f, 0.f), b2Vec2(0.2f, 0.2f));
+    auto sphere = new Entity(world, b2Vec2(0.f, 0.f), b2Vec2(0.4f, 0.4f));
     sphere->addComponent(new SphereRenderer(*sphere, {1.f, 0.f, 1.f}));
     sphere->addComponent(new MouseFollow(*sphere, 0.17f));
 
@@ -47,16 +45,14 @@ void Scene::initialize()
     ground->addComponent(new BoxRenderer(*ground, {1.f, 1.f, 0.f}));
     ground->addComponent(new UserInput(*ground, 4.5f));
 
-    ball->addComponent(new RigidBody(*ball, *ground));
+    //ball->addComponent(new RigidBody(*ball, *ground));
     rec->addComponent(new RigidBody(*rec, *ground));
-    another_rec->addComponent(new RigidBody(*another_rec, *ground));
     sphere->addComponent(new RigidBody(*sphere, *ground));
 
-    entities.push_back(ball);
+    //entities.push_back(ball);
     entities.push_back(rec);
     entities.push_back(ground);
     entities.push_back(cursor);
-    entities.push_back(another_rec);
     entities.push_back(sphere);
 
     for (auto i : entities)

@@ -29,7 +29,7 @@ void Scene::initialize()
 
     auto cursor = new Entity(world, b2Vec2(-0.01f, -0.01f), b2Vec2(0.01f, 0.01f));
     cursor->setName("cursor");
-    cursor->addComponent(new MouseFollow(*cursor, NULL));
+    cursor->addComponent(new MouseFollow(*cursor, 0.0));
     cursor->addComponent(new BoxRenderer(*cursor, {1.f, 0.f, 0.f}));
 
     auto rec = new Entity(world, b2Vec2(-0.8f, 0.6f), b2Vec2(-0.5f, 0.2f));

@@ -6,7 +6,7 @@
 #include <string>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <Box2D/Box2D.h>
+#include "box2d/box2d.h"
 
 class Component;
 

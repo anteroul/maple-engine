@@ -1,7 +1,7 @@
 #ifndef MAPLEENGINE_PHYSICS_H
 #define MAPLEENGINE_PHYSICS_H
 
-#include "Box2D/Box2D.h"
+#include "box2d/box2d.h"
 #include "ECS/Component.h"
 #include <map>
 #include <list>

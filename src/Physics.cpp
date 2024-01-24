@@ -1,6 +1,7 @@
 #include "Physics.h"
+#include "ECS/Components/RigidBody.h"
 
-#define GRAVITY (9.81 / 10)
+#define GRAVITY (9.81 / 1000)
 
 Physics::Physics() : world(b2Vec2_zero), accumulator(0.f)
 {}
@@ -16,11 +17,20 @@ void Physics::update(Entity* entity, float deltaTime)
         world.Step(getStepSize(), getVelocitySolverIterations(), getPositionSolverIterations());
         accumulator -= getStepSize();
     }
-    float fallingSpeed = GRAVITY * deltaTime;
+    float fallingSpeed = getAcceleration(GRAVITY, deltaTime);
+    if (entity->getComponment<RigidBody>())
+    {
+        fallingSpeed *= entity->getComponment<RigidBody>()->getMass();
+    }
     body->SetTransform(b2Vec2(position.x, position.y - fallingSpeed), angle);
 }
 
-float Physics::getGravity(float deltaTime)
+float Physics::getForce(float mass, float distance, float deltaTime)
 {
-    return GRAVITY * deltaTime;
+    return mass * getAcceleration(distance, deltaTime);
+}
+
+float Physics::getAcceleration(float distance, float deltaTime)
+{
+    return distance / deltaTime * deltaTime;
 }

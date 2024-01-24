@@ -8,15 +8,21 @@ void RigidBody::update(GLFWwindow *window, float deltaTime)
     float angle = body->GetAngle();
     float height = m_Owner->size.y;
     float bottom = position.y - height;
-    float platformLength = ground->size.x / 2;
-    float surface = ground->body->GetPosition().y;
+    float width = m_Owner->size.x;
 
-    if (position.x + m_Owner->size.x < ground->body->GetPosition().x + platformLength && position.x > ground->body->GetPosition().x - platformLength)
+    for (auto i : *m_Entities)
     {
-        if (bottom < surface && position.y > surface - ground->size.y)
+        float otherWidth = i->size.x / 2;
+        float surface = i->body->GetPosition().y;
+
+        if (position.x + width < i->body->GetPosition().x + otherWidth &&
+            position.x > i->body->GetPosition().x - otherWidth)
         {
-            const float impact = Physics::getGravity(deltaTime) * 2;
-            body->SetTransform(b2Vec2(position.x, position.y + impact), angle);
+            if (bottom < surface && position.y > surface - i->size.y)
+            {
+                const float impact = Physics::getForce(m_Mass, position.y, deltaTime) * -1;
+                body->SetTransform(b2Vec2(position.x, Physics::getAcceleration(position.y + impact / 10, deltaTime)), angle);
+            }
         }
     }
 }

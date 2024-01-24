@@ -19,13 +19,12 @@ void Scene::initialize()
 {
     b2World& world = physics.getWorld();
 
-    /*
     auto ball = new Entity(world, b2Vec2(-0.2f, 0.2f), b2Vec2(0.2f, -0.2f));
     ball->setName("ball");
     ball->addTag("Player");
-    ball->addComponent(new UserInput(*ball, 0.45f));
+    ball->addComponent(new UserInput(*ball, 0.05f));
     ball->addComponent(new SphereRenderer(*ball, {0.f, 1.f, 1.f}));
-    */
+    ball->addComponent(new RigidBody(*ball, &entities, 0.5f));
 
     auto cursor = new Entity(world, b2Vec2(-0.01f, -0.01f), b2Vec2(0.01f, 0.01f));
     cursor->setName("cursor");
@@ -43,13 +42,11 @@ void Scene::initialize()
     auto ground = new Entity(world, b2Vec2(-2.f, -0.4f), b2Vec2(2.f, -0.8f));
     ground->setName("ground");
     ground->addComponent(new BoxRenderer(*ground, {1.f, 1.f, 0.f}));
-    ground->addComponent(new UserInput(*ground, 4.5f));
 
-    //ball->addComponent(new RigidBody(*ball, *ground));
-    rec->addComponent(new RigidBody(*rec, *ground));
-    sphere->addComponent(new RigidBody(*sphere, *ground));
+    rec->addComponent(new RigidBody(*rec, &entities, 2.5f));
+    sphere->addComponent(new RigidBody(*sphere, &entities, 3.0f));
 
-    //entities.push_back(ball);
+    entities.push_back(ball);
     entities.push_back(rec);
     entities.push_back(ground);
     entities.push_back(cursor);
@@ -65,7 +62,6 @@ void Scene::update(GLFWwindow* window, float deltaTime)
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
     {
         auto cursor = getEntityWithName("cursor");
-        auto ground = getEntityWithName("ground");
 
         auto gameObject = new Entity
                 (
@@ -74,7 +70,7 @@ void Scene::update(GLFWwindow* window, float deltaTime)
                         b2Vec2(cursor->body->GetPosition().x + 0.2f, cursor->body->GetPosition().y - 0.2f)
                 );
 
-        gameObject->addComponent(new RigidBody(*gameObject, *ground));
+        gameObject->addComponent(new RigidBody(*gameObject, &entities, 1.5f));
         gameObject->addComponent(new BoxRenderer(*gameObject, {1.f, 0.f, 0.f}));
         entities.push_back(gameObject);
     }

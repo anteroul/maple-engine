@@ -1,5 +1,6 @@
 #include "UserInput.h"
 #include "RigidBody.h"
+#include "../../Physics.h"
 
 /// \param owner Entity containing this component
 /// \param speed Movement speed
@@ -13,24 +14,27 @@ UserInput::UserInput(Entity &owner, float speed) : Component(owner)
 /// \param deltaTime Scene frame time.
 void UserInput::update(GLFWwindow* window, float deltaTime)
 {
-    float speed = m_Speed * deltaTime;
     b2Body* body = getBody();
 
     if (body == nullptr)
         return;
 
-    if (glfwGetKey(window, GLFW_KEY_LEFT) || glfwGetKey(window, GLFW_KEY_A))
-        body->SetTransform(b2Vec2(body->GetPosition().x - speed, body->GetPosition().y), body->GetAngle());
-    if (glfwGetKey(window, GLFW_KEY_RIGHT) || glfwGetKey(window, GLFW_KEY_D))
-        body->SetTransform(b2Vec2(body->GetPosition().x + speed, body->GetPosition().y), body->GetAngle());
-
     // Does physics apply?
-    if (!getEntity().getComponment<RigidBody>())
+    if (getEntity().getComponment<RigidBody>())
     {
+        float acceleration = Physics::getForce(getEntity().getComponment<RigidBody>()->getMass(), m_Speed, deltaTime);
+        if (glfwGetKey(window, GLFW_KEY_LEFT) || glfwGetKey(window, GLFW_KEY_A))
+            body->SetTransform(b2Vec2(body->GetPosition().x - acceleration, body->GetPosition().y), body->GetAngle());
+        if (glfwGetKey(window, GLFW_KEY_RIGHT) || glfwGetKey(window, GLFW_KEY_D))
+            body->SetTransform(b2Vec2(body->GetPosition().x + acceleration, body->GetPosition().y), body->GetAngle());
+    } else {
+        if (glfwGetKey(window, GLFW_KEY_LEFT) || glfwGetKey(window, GLFW_KEY_A))
+            body->SetTransform(b2Vec2(body->GetPosition().x - m_Speed, body->GetPosition().y), body->GetAngle());
+        if (glfwGetKey(window, GLFW_KEY_RIGHT) || glfwGetKey(window, GLFW_KEY_D))
+            body->SetTransform(b2Vec2(body->GetPosition().x + m_Speed, body->GetPosition().y), body->GetAngle());
         if (glfwGetKey(window, GLFW_KEY_UP) || glfwGetKey(window, GLFW_KEY_W))
-            body->SetTransform(b2Vec2(body->GetPosition().x, body->GetPosition().y + speed), body->GetAngle());
+            body->SetTransform(b2Vec2(body->GetPosition().x, body->GetPosition().y + m_Speed), body->GetAngle());
         if (glfwGetKey(window, GLFW_KEY_DOWN) || glfwGetKey(window, GLFW_KEY_S))
-            body->SetTransform(b2Vec2(body->GetPosition().x, body->GetPosition().y - speed), body->GetAngle());
+            body->SetTransform(b2Vec2(body->GetPosition().x, body->GetPosition().y - m_Speed), body->GetAngle());
     }
-
 }

@@ -9,7 +9,6 @@ Entity::Entity(b2World& world, b2Vec2 topLeft, b2Vec2 bottomRight) : m_Name("")
     b2Vec2 origin = 1.f/2.f * (topLeft + bottomRight);
     size = b2Vec2(extents.x, extents.y);
     body = createBoxBody(world, origin, extents);
-    //body->SetUserData(this);
 }
 
 Entity::~Entity()

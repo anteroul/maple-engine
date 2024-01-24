@@ -8,6 +8,7 @@ Physics::Physics() : world(b2Vec2_zero), accumulator(0.f)
 
 void Physics::update(Entity* entity, float deltaTime)
 {
+    if (!entity->getComponment<RigidBody>()->onFreefall()) return;
     b2Body* body = entity->body;
     b2Vec2 position = body->GetPosition();
     float angle = body->GetAngle();

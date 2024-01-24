@@ -20,12 +20,17 @@ void RigidBody::update(GLFWwindow *window, float deltaTime)
             if (position.x + width < i->body->GetPosition().x + otherWidth &&
                 position.x > i->body->GetPosition().x - otherWidth)
             {
-                if (bottom < surface && position.y > surface - i->size.y)
+                if (bottom <= surface && position.y >= surface - i->size.y)
                 {
+                    /*
                     const float impact = Physics::getForce(m_Mass, position.y * 0.05f, deltaTime) * -1;
                     body->SetTransform(b2Vec2(position.x, position.y + impact), angle);
+                    */
+                    m_OnFreefall = false;
+                    return;
                 }
             }
         }
     }
+    m_OnFreefall = true;
 }

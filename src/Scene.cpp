@@ -24,7 +24,7 @@ void Scene::initialize()
     ball->addTag("Player");
     ball->addComponent(new UserInput(*ball, 0.05f));
     ball->addComponent(new SphereRenderer(*ball, {0.f, 1.f, 1.f}));
-    ball->addComponent(new RigidBody(*ball, &entities, 0.5f));
+    ball->addComponent(new RigidBody(*ball, &entities, 3.5f));
 
     auto cursor = new Entity(world, b2Vec2(-0.01f, -0.01f), b2Vec2(0.01f, 0.01f));
     cursor->setName("cursor");

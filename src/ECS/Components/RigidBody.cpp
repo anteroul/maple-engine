@@ -12,16 +12,19 @@ void RigidBody::update(GLFWwindow *window, float deltaTime)
 
     for (auto i : *m_Entities)
     {
-        float otherWidth = i->size.x / 2;
-        float surface = i->body->GetPosition().y;
-
-        if (position.x + width < i->body->GetPosition().x + otherWidth &&
-            position.x > i->body->GetPosition().x - otherWidth)
+        if (i != m_Owner)
         {
-            if (bottom < surface && position.y > surface - i->size.y)
+            float otherWidth = i->size.x / 2;
+            float surface = i->body->GetPosition().y;
+
+            if (position.x + width < i->body->GetPosition().x + otherWidth &&
+                position.x > i->body->GetPosition().x - otherWidth)
             {
-                const float impact = Physics::getForce(m_Mass, position.y, deltaTime) * -1;
-                body->SetTransform(b2Vec2(position.x, Physics::getAcceleration(position.y + impact / 10, deltaTime)), angle);
+                if (bottom < surface && position.y > surface - i->size.y)
+                {
+                    const float impact = Physics::getForce(m_Mass, position.y * 0.05f, deltaTime) * -1;
+                    body->SetTransform(b2Vec2(position.x, position.y + impact), angle);
+                }
             }
         }
     }

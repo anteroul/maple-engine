@@ -27,6 +27,7 @@ void RigidBody::update(GLFWwindow *window, float deltaTime)
                     body->SetTransform(b2Vec2(position.x, position.y + impact), angle);
                     */
                     m_OnFreefall = false;
+                    m_Speed = 0.f;
                     return;
                 }
             }

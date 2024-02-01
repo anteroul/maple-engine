@@ -27,6 +27,7 @@ add_executable(MapleEngine
         src/ECS/Component.h
         src/ECS/Components/UserInput.cpp
         src/ECS/Components/UserInput.h
+        src/ECS/Components/BoxCollider.h
         src/ECS/Components/BoxRenderer.cpp
         src/ECS/Components/BoxRenderer.h
         src/ECS/Components/SphereRenderer.cpp
@@ -36,6 +37,8 @@ add_executable(MapleEngine
         src/ECS/Components/RigidBody.cpp
         src/ECS/Components/RigidBody.h
         src/ECS/Components/Shader.h
+        src/ECS/Components/Shader.cpp
+        src/ECS/Components/Shader.cpp
 )
 
 target_link_libraries(MapleEngine PUBLIC ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${lib/stb_image.h} -lglfw -lbox2d)

@@ -27,7 +27,6 @@ add_executable(MapleEngine
         src/ECS/Component.h
         src/ECS/Components/UserInput.cpp
         src/ECS/Components/UserInput.h
-        src/ECS/Components/BoxCollider.h
         src/ECS/Components/BoxRenderer.cpp
         src/ECS/Components/BoxRenderer.h
         src/ECS/Components/SphereRenderer.cpp

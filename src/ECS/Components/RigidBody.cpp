@@ -5,7 +5,7 @@ void RigidBody::update(GLFWwindow *window, float deltaTime)
 {
     b2Body* body = getBody();
     b2Vec2 position = body->GetPosition();
-    float angle = body->GetAngle();
+    //float angle = body->GetAngle();
     float height = m_Owner->size.y;
     float bottom = position.y - height;
     float width = m_Owner->size.x;
@@ -27,7 +27,6 @@ void RigidBody::update(GLFWwindow *window, float deltaTime)
                     body->SetTransform(b2Vec2(position.x, position.y + impact), angle);
                     */
                     m_OnFreefall = false;
-                    m_Speed = 0.f;
                     return;
                 }
             }

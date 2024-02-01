@@ -1,6 +1,5 @@
 #include "Physics.h"
 #include "ECS/Components/RigidBody.h"
-#include <iostream>
 
 #define GRAVITY (9.81 / 10000)
 
@@ -22,7 +21,6 @@ void Physics::update(Entity* entity, float deltaTime)
     }
     entity->getComponment<RigidBody>()->m_Speed += getForce(entity->getComponment<RigidBody>()->getMass(), GRAVITY, deltaTime) * deltaTime;
     fallingSpeed = getAcceleration(entity->getComponment<RigidBody>()->m_Speed, deltaTime) * deltaTime;
-    std::cout << fallingSpeed << std::endl;
     body->SetTransform(b2Vec2(position.x, position.y - fallingSpeed), angle);
 }
 

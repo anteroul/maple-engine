@@ -3,14 +3,24 @@
 
 #include "../Component.h"
 #include "../../Log/msg.h"
-#include <cstdio>
 
+// TODO: Shader class implementation
 class Shader : public Component {
-public:
-    Shader(Entity &owner, const std::string &path);
-    void render() const override;
 private:
-    GLint* m_Shader;
+    std::string m_FilePath;
+    unsigned int m_RendererID;
+public:
+    Shader(Entity &owner, std::string  path);
+    ~Shader() override;
+    void render() const override;
+    void bind() const;
+    void unbind() const;
+
+    // Set uniforms
+    void setUniform4f(const std::string& name, float v0, float v1, float f2, float f3);
+private:
+    bool compileShader();
+    unsigned int getUniformLocation(const std::string& name);
 };
 
 

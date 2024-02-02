@@ -2,10 +2,12 @@
 #include "ECS/Components/UserInput.h"
 #include "ECS/Components/BoxRenderer.h"
 #include "ECS/Components/SphereRenderer.h"
-#include "ECS/Components/MouseFollow.h"
+//#include "ECS/Components/MouseFollow.h"
 #include "ECS/Components/RigidBody.h"
 #include "ECS/Components/BehaviourScript.h"
+
 #include "Scripts/TestScript.h"
+#include "Scripts/MouseFollow.h"
 
 Scene Scene::gameInstance;
 
@@ -31,7 +33,7 @@ void Scene::initialize()
 
     auto cursor = new Entity(world, b2Vec2(-0.01f, -0.01f), b2Vec2(0.01f, 0.01f));
     cursor->setName("cursor");
-    cursor->addComponent(new MouseFollow(*cursor, 0.0));
+    cursor->addComponent(new BehaviourScript(*cursor, mouseFollow));
     cursor->addComponent(new BoxRenderer(*cursor, {1.f, 0.f, 0.f}));
 
     auto rec = new Entity(world, b2Vec2(-0.8f, 0.6f), b2Vec2(-0.5f, 0.2f));
@@ -40,7 +42,7 @@ void Scene::initialize()
 
     auto sphere = new Entity(world, b2Vec2(0.f, 0.f), b2Vec2(0.4f, 0.4f));
     sphere->addComponent(new SphereRenderer(*sphere, {1.f, 0.f, 1.f}));
-    sphere->addComponent(new MouseFollow(*sphere, 0.17f));
+    sphere->addComponent(new BehaviourScript(*sphere, mouseFollow));
 
     auto ground = new Entity(world, b2Vec2(-2.f, -0.4f), b2Vec2(2.f, -0.8f));
     ground->setName("ground");

@@ -40,6 +40,7 @@ add_executable(MapleEngine
         src/ECS/Components/Shader.cpp
         src/ECS/Components/Shader.cpp
         src/Scripts/TestScript.h
+        src/Scripts/MouseFollow.h
 )
 
 target_link_libraries(MapleEngine PUBLIC ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${lib/stb_image.h} -lglfw -lbox2d)

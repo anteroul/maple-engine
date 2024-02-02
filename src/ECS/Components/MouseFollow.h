@@ -1,6 +1,7 @@
 #ifndef MAPLEENGINE_MOUSEPOSITION_H
 #define MAPLEENGINE_MOUSEPOSITION_H
 
+// ATTENTION! This class is deprecated!!!
 #include "../Component.h"
 
 class MouseFollow : public Component {

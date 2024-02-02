@@ -12,10 +12,10 @@ public:
     }
     void update(GLFWwindow* window, float deltaTime) override
     {
-        m_BehaviourScript(deltaTime);
+        m_BehaviourScript(this, window, deltaTime);
     }
 private:
-    std::function<void(float)> m_BehaviourScript;
+    std::function<void(Component*, GLFWwindow*, float)> m_BehaviourScript;
 };
 
 

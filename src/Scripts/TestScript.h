@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-static void test(float deltaTime)
+static void test(Component* owner, GLFWwindow* window, float deltaTime)
 {
     std::cout << "Delta Time: " << deltaTime << std::endl;
 }

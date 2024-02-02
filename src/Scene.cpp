@@ -6,7 +6,6 @@
 #include "ECS/Components/RigidBody.h"
 #include "ECS/Components/BehaviourScript.h"
 
-#include "Scripts/TestScript.h"
 #include "Scripts/MouseFollow.h"
 
 Scene Scene::gameInstance;
@@ -29,7 +28,6 @@ void Scene::initialize()
     ball->addComponent(new UserInput(*ball, 0.01f));
     ball->addComponent(new SphereRenderer(*ball, {0.f, 1.f, 1.f}));
     ball->addComponent(new RigidBody(*ball, &entities, 4.5f));
-    ball->addComponent(new BehaviourScript(*ball, test));
 
     auto cursor = new Entity(world, b2Vec2(-0.01f, -0.01f), b2Vec2(0.01f, 0.01f));
     cursor->setName("cursor");

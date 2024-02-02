@@ -39,7 +39,6 @@ add_executable(MapleEngine
         src/ECS/Components/Shader.h
         src/ECS/Components/Shader.cpp
         src/ECS/Components/Shader.cpp
-        src/Scripts/TestScript.h
         src/Scripts/MouseFollow.h
 )
 

@@ -22,7 +22,7 @@ void UserInput::update(GLFWwindow* window, float deltaTime)
     // Do physics apply?
     if (getEntity().getComponment<RigidBody>())
     {
-        float acceleration = Physics::getForce(getEntity().getComponment<RigidBody>()->getMass(), m_Speed, deltaTime) * deltaTime;
+        float acceleration = Physics::getAcceleration(m_Speed, deltaTime) * deltaTime / getEntity().getComponment<RigidBody>()->getMass();
 
         if (glfwGetKey(window, GLFW_KEY_LEFT) || glfwGetKey(window, GLFW_KEY_A))
             body->SetTransform(b2Vec2(body->GetPosition().x - acceleration, body->GetPosition().y), body->GetAngle());

@@ -35,7 +35,7 @@ App::~App()
 {
     glfwSetWindowShouldClose(window, true);
     glfwTerminate();
-    printf("%s \bSUCCESS: Applicated closed successfully.\n", SUCCESS);
+    printf("%s \bSUCCESS: Application closed successfully.\n", SUCCESS);
 }
 
 void App::Launch()

@@ -18,7 +18,7 @@ public:
     b2Body* getBody() { return m_Owner.body; }
 
     template<typename T>
-    T* getComponent() const { return m_Owner.getComponment<T>(); }
+    T* getComponent() const { return m_Owner.getComponent<T>(); }
     void addComponent(Component *component) { return m_Owner.addComponent(component); }
 private:
     Entity& m_Owner;

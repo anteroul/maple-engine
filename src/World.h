@@ -1,5 +1,5 @@
-#ifndef MAPLEENGINE_SCENE_H
-#define MAPLEENGINE_SCENE_H
+#ifndef MAPLEENGINE_WORLD_H
+#define MAPLEENGINE_WORLD_H
 
 #include "ECS/Entity.h"
 #include "Physics.h"
@@ -9,12 +9,12 @@
 #include <list>
 #include <map>
 
-class Scene {
+class World {
 public:
-    static Scene& getInstance();
+    static World& getInstance();
     static b2Vec2 getSize() { return b2Vec2(10., 7.5); }
 
-    /// Scene life cycle
+    /// Game life cycle
     void initialize();
     void update(GLFWwindow* window, float deltaTime);
     void render(GLFWwindow* window);
@@ -31,12 +31,12 @@ public:
     std::list<Entity*> getEntitiesWithTag(const std::string& tag) const;
     Entity* getEntityWithTag(const std::string& tag) const;
 private:
-    static Scene gameInstance;
+    static World gameInstance;
     std::vector<Entity*> entities;
     std::map<std::string, Entity*> names;
     std::map<std::string, std::list<Entity*>> tags;
     Physics physics;
-    Scene();
+    World();
 };
 
-#endif //MAPLEENGINE_SCENE_H
+#endif //MAPLEENGINE_WORLD_H

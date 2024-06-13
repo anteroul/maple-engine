@@ -18,8 +18,8 @@ add_executable(MapleEngine
         src/App.h
         src/App.cpp
         src/Log/msg.h
-        src/Scene.cpp
-        src/Scene.h
+        src/World.cpp
+        src/World.h
         src/Physics.cpp
         src/Physics.h
         src/ECS/Entity.cpp

@@ -3,7 +3,7 @@
 
 /// Sets the entity position as current cursor position.
 /// \param window OpenGL window context.
-/// \param deltaTime Scene frame time.
+/// \param deltaTime World frame time.
 void MouseFollow::update(GLFWwindow *window, float deltaTime)
 {
     double x, y;
@@ -23,7 +23,7 @@ void MouseFollow::update(GLFWwindow *window, float deltaTime)
     b2Body* body = getBody();
 
     // Is gravity applied?
-    if (!getEntity().getComponment<RigidBody>()) {
+    if (!getEntity().getComponent<RigidBody>()) {
         body->SetTransform(b2Vec2((float)x, (float)y), body->GetAngle());
     } else {
         body->SetTransform(b2Vec2(body->GetPosition().x + speed * x, body->GetPosition().y), body->GetAngle());

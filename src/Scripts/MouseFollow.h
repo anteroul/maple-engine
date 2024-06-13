@@ -22,7 +22,7 @@ static void mouseFollow(Component* owner, GLFWwindow *window, float deltaTime)
     b2Body* body = owner->getBody();
 
     // Is gravity applied?
-    if (!owner->getEntity().getComponment<RigidBody>()) {
+    if (!owner->getEntity().getComponent<RigidBody>()) {
         body->SetTransform(b2Vec2((float)x, (float)y), body->GetAngle());
     } else {
         body->SetTransform(b2Vec2(body->GetPosition().x + speed * x, body->GetPosition().y), body->GetAngle());

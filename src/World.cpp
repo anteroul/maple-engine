@@ -1,24 +1,22 @@
-#include "Scene.h"
+#include "World.h"
 #include "ECS/Components/UserInput.h"
 #include "ECS/Components/BoxRenderer.h"
 #include "ECS/Components/SphereRenderer.h"
-//#include "ECS/Components/MouseFollow.h"
 #include "ECS/Components/RigidBody.h"
 #include "ECS/Components/BehaviourScript.h"
-
 #include "Scripts/MouseFollow.h"
 
-Scene Scene::gameInstance;
+World World::gameInstance;
 
-Scene& Scene::getInstance()
+World& World::getInstance()
 {
     return gameInstance;
 }
 
-Scene::Scene() = default;
+World::World() = default;
 
 /// Initialize all entities
-void Scene::initialize()
+void World::initialize()
 {
     b2World& world = physics.getWorld();
 
@@ -59,8 +57,8 @@ void Scene::initialize()
         i->initialize();
 }
 
-/// Update all entites
-void Scene::update(GLFWwindow* window, float deltaTime)
+/// Update all entities
+void World::update(GLFWwindow* window, float deltaTime)
 {
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
     {
@@ -80,14 +78,14 @@ void Scene::update(GLFWwindow* window, float deltaTime)
 
     for (auto entity : entities)
     {
-        if (entity->getComponment<RigidBody>())
+        if (entity->getComponent<RigidBody>())
             physics.update(entity, deltaTime);
         entity->update(window, deltaTime);
     }
 }
 
 /// Render all entities
-void Scene::render(GLFWwindow* window)
+void World::render(GLFWwindow* window)
 {
     glClearColor(0.f, 0.f, 0.f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -98,17 +96,17 @@ void Scene::render(GLFWwindow* window)
     glfwSwapBuffers(window);
 }
 
-void Scene::setEntityName(Entity* entity, const std::string& name)
+void World::setEntityName(Entity* entity, const std::string& name)
 {
     names.insert(std::pair<std::string, Entity*>(name, entity));
 }
 
-void Scene::removeEntityName(Entity* entity, const std::string& name)
+void World::removeEntityName(Entity* entity, const std::string& name)
 {
     names.erase(name);
 }
 
-Entity* Scene::getEntityWithName(const std::string& name) const
+Entity* World::getEntityWithName(const std::string& name) const
 {
     auto it = names.find(name);
 
@@ -118,7 +116,7 @@ Entity* Scene::getEntityWithName(const std::string& name) const
         return it->second;
 }
 
-void Scene::addEntityTag(Entity* entity, const std::string& tag)
+void World::addEntityTag(Entity* entity, const std::string& tag)
 {
     auto it = tags.find(tag);
 
@@ -131,7 +129,7 @@ void Scene::addEntityTag(Entity* entity, const std::string& tag)
     it->second.push_back(entity);
 }
 
-void Scene::removeEntityTag(Entity* entity, const std::string& tag)
+void World::removeEntityTag(Entity* entity, const std::string& tag)
 {
     auto it = tags.find(tag);
 
@@ -147,7 +145,7 @@ void Scene::removeEntityTag(Entity* entity, const std::string& tag)
     entities.erase(entityIt);
 }
 
-std::list<Entity*> Scene::getEntitiesWithTag(const std::string& tag) const
+std::list<Entity*> World::getEntitiesWithTag(const std::string& tag) const
 {
     auto it = tags.find(tag);
 
@@ -157,7 +155,7 @@ std::list<Entity*> Scene::getEntitiesWithTag(const std::string& tag) const
         return it->second;
 }
 
-Entity* Scene::getEntityWithTag(const std::string& tag) const
+Entity* World::getEntityWithTag(const std::string& tag) const
 {
     auto entities = getEntitiesWithTag(tag);
     auto it = entities.begin();

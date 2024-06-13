@@ -48,7 +48,7 @@ void App::Launch()
     glfwGetWindowSize(window, &width, &height);
     printf("%s \bINFO: Application is now running!\n", INFO);
 
-    Scene& game = Scene::getInstance();
+    World& game = World::getInstance();
     game.initialize();
 
     while (!ApplicationShouldClose())
@@ -73,7 +73,7 @@ void App::Launch()
 }
 
 ///  Main game loop
-void App::RunApplication(Scene& game)
+void App::RunApplication(World& game)
 {
     game.update(window, (float)deltaTime);
     HandleMouseMotion(window, 0, 0);
@@ -100,6 +100,6 @@ void App::HandleMouseMotion(GLFWwindow *window, double xPos, double yPos)
 
 void App::ThrowError(int error, const char *description)
 {
-    fprintf(stderr, "ERROR %d: \t %s\n", error, description);
+    fprintf(stderr, "%s \bERROR %d: %s\n", ERROR, error, description);
     exit(error);
 }

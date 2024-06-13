@@ -11,7 +11,7 @@ UserInput::UserInput(Entity &owner, float speed) : Component(owner)
 
 /// Move entity with arrow keys.
 /// \param window OpenGL window context.
-/// \param deltaTime Scene frame time.
+/// \param deltaTime World frame time.
 void UserInput::update(GLFWwindow* window, float deltaTime)
 {
     b2Body* body = getBody();
@@ -20,9 +20,9 @@ void UserInput::update(GLFWwindow* window, float deltaTime)
         return;
 
     // Do physics apply?
-    if (getEntity().getComponment<RigidBody>())
+    if (getEntity().getComponent<RigidBody>())
     {
-        float acceleration = Physics::getAcceleration(m_Speed, deltaTime) * deltaTime / getEntity().getComponment<RigidBody>()->getMass();
+        float acceleration = Physics::getAcceleration(m_Speed, deltaTime) * deltaTime / getEntity().getComponent<RigidBody>()->getMass();
 
         if (glfwGetKey(window, GLFW_KEY_LEFT) || glfwGetKey(window, GLFW_KEY_A))
             body->SetTransform(b2Vec2(body->GetPosition().x - acceleration, body->GetPosition().y), body->GetAngle());

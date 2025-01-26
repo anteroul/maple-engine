@@ -5,8 +5,8 @@
 
 class Component {
 public:
-    Component(Entity& owner) :m_Owner(owner) {}
-    virtual ~Component() {}
+    explicit Component(Entity& owner) :m_Owner(owner) {}
+    virtual ~Component() = default;
     /// Component life cycle
     virtual void initialize() {}
     virtual void render() const {}

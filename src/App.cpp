@@ -83,7 +83,7 @@ void App::RunApplication(World& game)
 
 bool App::ApplicationShouldClose()
 {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS || glfwWindowShouldClose(window))
     {
         printf("%s \bINFO: Closing application.\n", WARNING);
         return true;

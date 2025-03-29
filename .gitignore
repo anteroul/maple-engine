@@ -1,5 +1,6 @@
 # Project exclude paths
 /.idea/
+/.vscode/
 /cmake-build-debug/
 /lib/
 /3rd_party/

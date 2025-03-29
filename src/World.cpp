@@ -118,7 +118,7 @@ void World::removeEntityTag(Entity *entity, const std::string &tag) {
     entities.erase(entityIt);
 }
 
-std::list<Entity *> World::getEntitiesWithTag(const std::string &tag) const {
+std::list<Entity*> World::getEntitiesWithTag(const std::string &tag) const {
     auto it = tags.find(tag);
 
     if (it == tags.end())

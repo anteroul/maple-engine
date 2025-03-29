@@ -11,6 +11,7 @@
 struct Transform {
     float x, y;
     float scale_x, scale_y;
+    float rotation;
 };
 
 struct Velocity {

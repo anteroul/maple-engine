@@ -6,7 +6,16 @@
 #include <string>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include "box2d/box2d.h"
+#include <box2d/box2d.h>
+
+struct Transform {
+    float x, y;
+    float scale_x, scale_y;
+};
+
+struct Velocity {
+    float x, y;
+};
 
 class Component;
 
@@ -18,6 +27,11 @@ public:
     /// \param [in] bottomRight Bottom right corner of the entity
     Entity(b2World& world, b2Vec2 topLeft, b2Vec2 bottomRight);
     ~Entity();
+
+    /// Transform data
+    struct Transform transform{};
+    struct Velocity velocity{};
+
     /// Entity life cycle
     void initialize();
     void update(GLFWwindow* window, float deltaTime);

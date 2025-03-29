@@ -22,6 +22,9 @@ void Physics::update(Entity* entity, float deltaTime)
     entity->getComponent<RigidBody>()->m_Speed += getForce(entity->getComponent<RigidBody>()->getMass(), GRAVITY, deltaTime) * deltaTime;
     fallingSpeed = getAcceleration(entity->getComponent<RigidBody>()->m_Speed, deltaTime) * deltaTime;
     body->SetTransform(b2Vec2(position.x, position.y - fallingSpeed), angle);
+
+    entity->velocity.x *= getAcceleration(entity->velocity.x, deltaTime);
+    entity->velocity.y *= getAcceleration(entity->velocity.y, deltaTime);
 }
 
 float Physics::getForce(float mass, float speed, float deltaTime)

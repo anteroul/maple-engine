@@ -1,36 +1,41 @@
 #include "RigidBody.h"
-#include "../../Physics.h"
 
 void RigidBody::update(GLFWwindow *window, float deltaTime)
 {
     b2Body* body = getBody();
     b2Vec2 position = body->GetPosition();
-    //float angle = body->GetAngle();
     float height = m_Owner->size.y;
-    float bottom = position.y - height;
+    float bottom = position.y - height / 2.0f;
     float width = m_Owner->size.x;
 
-    for (auto i : *m_Entities)
-    {
-        if (i != m_Owner)
-        {
-            float otherWidth = i->size.x / 2;
-            float surface = i->body->GetPosition().y;
+    float highestSurface = -FLT_MAX; // Store the highest surface detected
+    bool onSurface = false;
 
-            if (position.x + width < i->body->GetPosition().x + otherWidth &&
-                position.x > i->body->GetPosition().x - otherWidth)
+    for (auto& i : *m_Entities)
+    {
+        if (i == m_Owner) continue;
+
+        float otherWidth = i->size.x / 2.0f;
+        float leftA = position.x - width / 2.0f;
+        float rightA = position.x + width / 2.0f;
+        float leftB = i->body->GetPosition().x - otherWidth;
+        float rightB = i->body->GetPosition().x + otherWidth;
+
+        // Check if the objects horizontally overlap
+        if (rightA >= leftB && leftA <= rightB)
+        {
+            float surface = i->body->GetPosition().y + i->size.y / 2.0f;
+
+            // Ensure correct vertical positioning
+            if (fabs(bottom - surface) <= 0.01f)
             {
-                if (bottom <= surface && position.y >= surface - i->size.y)
-                {
-                    /*
-                    const float impact = Physics::getForce(m_Mass, position.y * 0.05f, deltaTime) * -1;
-                    body->SetTransform(b2Vec2(position.x, position.y + impact), angle);
-                    */
-                    m_OnFreefall = false;
-                    return;
+                if (surface > highestSurface) {
+                    highestSurface = surface;
+                    onSurface = true;
                 }
             }
         }
     }
-    m_OnFreefall = true;
+
+    m_OnFreefall = !onSurface;
 }

@@ -5,12 +5,12 @@
 
 class Component {
 public:
-    explicit Component(Entity& owner) :m_Owner(owner) {}
+    explicit Component(Entity& owner) : m_Owner(owner) {}
     virtual ~Component() = default;
     /// Component life cycle
     virtual void initialize() {}
     virtual void render() const {}
-    virtual void update(GLFWwindow* glfWwindow, float deltaTime) {}
+    virtual void update(GLFWwindow* glfwWindow, float deltaTime) {}
 
     Entity& getEntity() { return m_Owner; }
     void setBody(b2Body* body) { m_Owner.body = body; }

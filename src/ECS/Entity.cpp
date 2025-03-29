@@ -1,5 +1,5 @@
+#include <cmath>
 #include "Entity.h"
-
 #include "../World.h"
 #include "Component.h"
 
@@ -9,6 +9,8 @@ Entity::Entity(b2World& world, b2Vec2 topLeft, b2Vec2 bottomRight) : m_Name("")
     b2Vec2 origin = 1.f/2.f * (topLeft + bottomRight);
     size = b2Vec2(extents.x, extents.y);
     body = createBoxBody(world, origin, extents);
+    transform = {origin.x, origin.y, size.x, size.y};
+    velocity = {0.f, 0.f};
 }
 
 Entity::~Entity()
@@ -28,8 +30,21 @@ void Entity::initialize()
 /// \param deltaTime World frame time
 void Entity::update(GLFWwindow* window, float deltaTime)
 {
+    float oldX = body->GetPosition().x;
+    float oldY = body->GetPosition().y;
+
     for (auto component : m_Components)
         component->update(window, deltaTime);
+
+    float newX = body->GetPosition().x - oldX;
+    float newY = body->GetPosition().x - oldY;
+    velocity.x = newX / deltaTime;
+    velocity.y = newY / deltaTime;
+    if (velocity.x != 0 && velocity.y != 0)
+    {
+        transform.x += velocity.x * deltaTime;
+        transform.y += velocity.y * deltaTime;
+    }
 }
 
 /// Render all components linked to the entity.

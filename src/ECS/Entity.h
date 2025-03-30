@@ -52,7 +52,7 @@ public:
 
     /// Entity registration
     void setName(const std::string& name);
-    [[nodiscard]] const std::string& getName() const;
+    const std::string& getName() const;
     void addTag(const std::string& tag);
     void removeTag(const std::string& tag);
 

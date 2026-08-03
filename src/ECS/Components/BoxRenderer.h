@@ -15,7 +15,6 @@ private:
     float m_Width, m_Height, m_Depth;
     glm::vec3 m_Colour{};
 public:
-    BoxRenderer(Entity& owner, glm::vec3 colour);
     BoxRenderer(Entity& owner, float width = 1.0f, float height = 1.0f, float depth = 1.0f)
         : Component(owner), m_Width(width), m_Height(height), m_Depth(depth) { initialize(); }
 

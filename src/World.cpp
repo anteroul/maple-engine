@@ -21,11 +21,11 @@ void World::initialize() {
     auto cursor = new Entity(world, b2Vec2{-0.01f, -0.01f}, b2Vec2{0.01f, 0.01f});
     cursor->setName("cursor");
     cursor->addComponent(new BehaviourScript(*cursor, mouseFollow));
-    cursor->addComponent(new BoxRenderer(*cursor, {1.f, 0.f, 0.f}));
+    cursor->addComponent(new BoxRenderer(*cursor, 0.2f, 0.15f, 1.0f));
 
     auto ground = new Entity(world, b2Vec2{-2.f, -0.4f}, b2Vec2{2.f, -0.8f});
     ground->setName("ground");
-    ground->addComponent(new BoxRenderer(*ground, {1.f, 1.f, 0.f}));
+    ground->addComponent(new BoxRenderer(*ground, 4.0f, 1.f, 1.f));
 
     entities.push_back(ground);
     entities.push_back(cursor);
@@ -54,7 +54,7 @@ void World::update(GLFWwindow *window, float deltaTime) {
                 );
 
         gameObject->addComponent(new RigidBody(*gameObject, &entities, 1.5f));
-        gameObject->addComponent(new BoxRenderer(*gameObject, {r, g, b})); // Use random color
+        gameObject->addComponent(new SphereRenderer(*gameObject, 1.0f, 32, 16)); // Use random color
         entities.push_back(gameObject);
     }
 
@@ -136,4 +136,8 @@ Entity *World::getEntityWithTag(const std::string &tag) const {
         return nullptr;
     else
         return *it;
+}
+
+int World::getLevel() {
+    return state.level;
 }

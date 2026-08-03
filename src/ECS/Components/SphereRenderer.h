@@ -36,11 +36,8 @@ public:
             drawMesh(m_Handle);
             shader->unbind();
         }
-    }
-    
-    float m_Radius;
+    }    
 protected:
-    SphereRenderer(Entity& owner, glm::vec3 colour);
     void renderLegacy() const;
     glm::vec3 m_Colour{};
     GLUquadric *m_Quadric;

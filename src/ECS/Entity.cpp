@@ -2,11 +2,11 @@
 #include "Entity.h"
 #include "Component.h"
 
-Entity::Entity(b2World& world, b2Vec2 topLeft, b2Vec2 bottomRight) : m_Name("")
+Entity::Entity(b2WorldId world, b2Vec2 topLeft, b2Vec2 bottomRight) : m_Name("")
 {
     b2Vec2 extents = 1.f/2.f * b2Abs(topLeft - bottomRight);
     b2Vec2 origin = 1.f/2.f * (topLeft + bottomRight);
-    size = b2Vec2(extents.x, extents.y);
+    size = b2Vec2{extents.x, extents.y};
     body = createBoxBody(world, origin, extents);
     transform = {origin.x, origin.y, size.x, size.y, 0.f};
     velocity = {0.f, 0.f};
@@ -29,12 +29,12 @@ void Entity::initialize()
 /// \param deltaTime World frame time
 void Entity::update(GLFWwindow* window, float deltaTime)
 {
-    auto oldPos = body->GetPosition();
+    auto oldPos = b2Body_GetPosition(body);
 
     for (const auto& component : m_Components)
         component->update(window, deltaTime);
 
-    auto newPos = body->GetPosition();
+    auto newPos = b2Body_GetPosition(body);
     velocity.x = (newPos.x - oldPos.x) / deltaTime;
     velocity.y = (newPos.y - oldPos.y) / deltaTime;
 
@@ -97,22 +97,20 @@ void Entity::removeTag(const std::string& tag)
 }
 
 /// Creates a box body for the entity
-b2Body* Entity::createBoxBody(b2World& world, b2Vec2 origin, b2Vec2 extents)
+b2BodyId Entity::createBoxBody(b2WorldId world, b2Vec2 origin, b2Vec2 extents)
 {
-    b2BodyDef groundBodyDef;
+    b2BodyDef groundBodyDef = b2DefaultBodyDef();
     groundBodyDef.position = origin;
 
-    b2PolygonShape groundBox;
-    groundBox.SetAsBox(extents.x, extents.y);
+    b2Polygon groundBox = b2MakeBox(extents.x, extents.y);
 
-    b2Body* body = world.CreateBody(&groundBodyDef);
+    b2BodyId body = b2CreateBody(world, &groundBodyDef);
 
-    b2FixtureDef fixtureDef;
-    fixtureDef.shape = &groundBox;
-    fixtureDef.density = 1.f;
-    fixtureDef.friction = 0.f;
-    fixtureDef.restitution = 1.f;
+    b2ShapeDef shapeDef = b2DefaultShapeDef();
+    shapeDef.density = 1.f;
+    shapeDef.material.friction = 0.f;
+    shapeDef.material.restitution = 1.f;
 
-    body->CreateFixture(&fixtureDef);
+    b2CreatePolygonShape(body, &shapeDef, &groundBox);
     return body;
 }

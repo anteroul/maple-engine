@@ -16,14 +16,14 @@ World::World() = default;
 
 /// Initialize all entities
 void World::initialize() {
-    b2World &world = physics.getWorld();
+    b2WorldId world = physics.getWorld();
 
-    auto cursor = new Entity(world, b2Vec2(-0.01f, -0.01f), b2Vec2(0.01f, 0.01f));
+    auto cursor = new Entity(world, b2Vec2{-0.01f, -0.01f}, b2Vec2{0.01f, 0.01f});
     cursor->setName("cursor");
     cursor->addComponent(new BehaviourScript(*cursor, mouseFollow));
     cursor->addComponent(new BoxRenderer(*cursor, {1.f, 0.f, 0.f}));
 
-    auto ground = new Entity(world, b2Vec2(-2.f, -0.4f), b2Vec2(2.f, -0.8f));
+    auto ground = new Entity(world, b2Vec2{-2.f, -0.4f}, b2Vec2{2.f, -0.8f});
     ground->setName("ground");
     ground->addComponent(new BoxRenderer(*ground, {1.f, 1.f, 0.f}));
 
@@ -45,11 +45,12 @@ void World::update(GLFWwindow *window, float deltaTime) {
         float g = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
         float b = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 
+        b2Vec2 cursorPosition = b2Body_GetPosition(cursor->body);
         auto gameObject = new Entity
                 (
                         physics.getWorld(),
-                        b2Vec2(cursor->body->GetPosition().x - 0.2f, cursor->body->GetPosition().y + 0.2f),
-                        b2Vec2(cursor->body->GetPosition().x + 0.2f, cursor->body->GetPosition().y - 0.2f)
+                        b2Vec2{cursorPosition.x - 0.2f, cursorPosition.y + 0.2f},
+                        b2Vec2{cursorPosition.x + 0.2f, cursorPosition.y - 0.2f}
                 );
 
         gameObject->addComponent(new RigidBody(*gameObject, &entities, 1.5f));

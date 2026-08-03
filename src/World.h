@@ -12,7 +12,7 @@
 class World {
 public:
     static World& getInstance();
-    static b2Vec2 getSize() { return b2Vec2(10., 7.5); }
+    static b2Vec2 getSize() { return b2Vec2{10.f, 7.5f}; }
 
     /// Game life cycle
     void initialize();

@@ -1,38 +1,41 @@
 #include "Physics.h"
 #include "ECS/Components/RigidBody.h"
 
-#define GRAVITY (9.81 / 10000)
+constexpr float GRAVITY = 9.81f; // m/s^2, real units, mass-independent
 
-Physics::Physics() : world(b2Vec2_zero), accumulator(0.f)
-{}
+Physics::Physics() : accumulator(0.f)
+{
+    b2WorldDef worldDef = b2DefaultWorldDef();
+    worldDef.gravity = b2Vec2_zero; // world gravity off; this system owns freefall
+    world = b2CreateWorld(&worldDef);
+}
+
+Physics::~Physics()
+{
+    b2DestroyWorld(world);
+}
 
 void Physics::update(Entity* entity, float deltaTime)
 {
-    if (!entity->getComponent<RigidBody>()->onFreefall()) return;
-    b2Body* body = entity->body;
-    b2Vec2 position = body->GetPosition();
-    float angle = body->GetAngle();
-    float fallingSpeed = entity->getComponent<RigidBody>()->m_Speed;
+    RigidBody* rb = entity->getComponent<RigidBody>();
+    if (!rb->onFreefall()) return;
 
+    accumulator += deltaTime;
     while (accumulator >= getStepSize())
     {
-        world.Step(getStepSize(), getVelocitySolverIterations(), getPositionSolverIterations());
+        b2World_Step(world, getStepSize(), getSubStepCount());
         accumulator -= getStepSize();
     }
-    entity->getComponent<RigidBody>()->m_Speed += getForce(entity->getComponent<RigidBody>()->getMass(), GRAVITY, deltaTime) * deltaTime;
-    fallingSpeed = getAcceleration(entity->getComponent<RigidBody>()->m_Speed, deltaTime) * deltaTime;
-    body->SetTransform(b2Vec2(position.x, position.y - fallingSpeed), angle);
 
-    entity->velocity.x *= getAcceleration(entity->velocity.x, deltaTime);
-    entity->velocity.y *= getAcceleration(entity->velocity.y, deltaTime);
-}
+    b2BodyId body = entity->body;
+    b2Vec2 position = b2Body_GetPosition(body);
+    b2Rot rotation = b2Body_GetRotation(body);
 
-float Physics::getForce(float mass, float speed, float deltaTime)
-{
-    return mass * getAcceleration(speed, deltaTime);
-}
+    // v += a * dt  (acceleration due to gravity, independent of mass)
+    rb->m_Speed += GRAVITY * deltaTime;
 
-float Physics::getAcceleration(float speed, float deltaTime)
-{
-    return speed / deltaTime;
+    // x += v * dt
+    float fallDistance = rb->m_Speed * deltaTime;
+
+    b2Body_SetTransform(body, b2Vec2{position.x, position.y - fallDistance}, rotation);
 }

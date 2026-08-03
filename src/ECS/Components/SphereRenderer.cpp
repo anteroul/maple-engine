@@ -13,12 +13,12 @@ SphereRenderer::SphereRenderer(Entity& owner, glm::vec3 colour) : Component(owne
 }
 
 /// Render sphere
-void SphereRenderer::render() const
+void SphereRenderer::renderLegacy() const
 {
-    const b2Body* body = getBody();
+    const b2BodyId body = getBody();
 
     glLoadIdentity();
-    b2Vec2 ballPosition = body->GetPosition();
+    b2Vec2 ballPosition = b2Body_GetPosition(body);
     glTranslatef(ballPosition.x, ballPosition.y, 0.f);
     glColor3f(m_Colour.r, m_Colour.g, m_Colour.b);
     gluSphere(m_Quadric, m_Radius, SLICES, SLICES);

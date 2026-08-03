@@ -20,12 +20,12 @@ void MouseFollow::update(GLFWwindow *window, float deltaTime)
     y *= -1;
     y /= (height / 2);
 
-    b2Body* body = getBody();
+    b2BodyId body = getBody();
 
     // Is gravity applied?
     if (!getEntity().getComponent<RigidBody>()) {
-        body->SetTransform(b2Vec2((float)x, (float)y), body->GetAngle());
+        b2Body_SetTransform(body, b2Vec2{(float)x, (float)y}, b2Body_GetRotation(body));
     } else {
-        body->SetTransform(b2Vec2(body->GetPosition().x + speed * x, body->GetPosition().y), body->GetAngle());
+        b2Body_SetTransform(body, b2Vec2{b2Body_GetPosition(body).x + speed * (float)x, b2Body_GetPosition(body).y}, b2Body_GetRotation(body));
     }
 }

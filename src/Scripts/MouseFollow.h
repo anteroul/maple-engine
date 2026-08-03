@@ -1,6 +1,11 @@
 #ifndef MAPLEENGINE_MOUSEFOLLOW_H
 #define MAPLEENGINE_MOUSEFOLLOW_H
 
+#include <GLFW/glfw3.h>
+#include <box2d/box2d.h>
+#include "../Component.h"
+#include <RigidBody.h>
+
 #define SPEED (0.2)
 
 static void mouseFollow(Component* owner, GLFWwindow *window, float deltaTime)
@@ -19,13 +24,13 @@ static void mouseFollow(Component* owner, GLFWwindow *window, float deltaTime)
     y *= -1;
     y /= (height / 2);
 
-    b2Body* body = owner->getBody();
+    b2BodyId body = owner->getBody();
 
     // Is gravity applied?
     if (!owner->getEntity().getComponent<RigidBody>()) {
-        body->SetTransform(b2Vec2((float)x, (float)y), body->GetAngle());
+        b2Body_SetTransform(body, b2Vec2{(float)x, (float)y}, b2Body_GetRotation(body));
     } else {
-        body->SetTransform(b2Vec2(body->GetPosition().x + speed * x, body->GetPosition().y), body->GetAngle());
+        b2Body_SetTransform(body, b2Vec2{b2Body_GetPosition(body).x + speed * (float)x, b2Body_GetPosition(body).y}, b2Body_GetRotation(body));
     }
 }
 

@@ -13,9 +13,8 @@ public:
     virtual void update(GLFWwindow* glfwWindow, float deltaTime) {}
 
     Entity& getEntity() { return m_Owner; }
-    void setBody(b2Body* body) { m_Owner.body = body; }
-    const b2Body* getBody() const { return m_Owner.body; }
-    b2Body* getBody() { return m_Owner.body; }
+    void setBody(b2BodyId body) { m_Owner.body = body; }
+    b2BodyId getBody() const { return m_Owner.body; }
 
     template<typename T>
     T* getComponent() const { return m_Owner.getComponent<T>(); }

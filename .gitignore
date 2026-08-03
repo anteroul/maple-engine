@@ -2,6 +2,13 @@
 /.idea/
 /.vscode/
 /cmake-build-debug/
+/CMakeFiles/
 /lib/
 /3rd_party/
 /build/
+Makefile
+MapleEngine
+*.cmake
+*.nix
+flake.lock
+CMakeCache.txt

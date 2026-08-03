@@ -26,7 +26,7 @@ public:
     /// \param [in] world Reference to game world
     /// \param [in] topLeft Top left corner of the entity
     /// \param [in] bottomRight Bottom right corner of the entity
-    Entity(b2World& world, b2Vec2 topLeft, b2Vec2 bottomRight);
+    Entity(b2WorldId world, b2Vec2 topLeft, b2Vec2 bottomRight);
     ~Entity();
 
     /// Transform data
@@ -57,9 +57,9 @@ public:
     void removeTag(const std::string& tag);
 
     b2Vec2 size;
-    b2Body* body;
+    b2BodyId body;
 private:
-    b2Body* createBoxBody(b2World& world, b2Vec2 origin, b2Vec2 extents);
+    b2BodyId createBoxBody(b2WorldId world, b2Vec2 origin, b2Vec2 extents);
     std::string m_Name;
     std::set<std::string> m_Tags;
     std::list<Component*> m_Components;

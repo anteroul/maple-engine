@@ -2,13 +2,15 @@
 #include "Entity.h"
 #include "Component.h"
 
-Entity::Entity(b2WorldId world, b2Vec2 topLeft, b2Vec2 bottomRight) : m_Name("")
+Entity::Entity(b2WorldId world, b2Vec2 topLeft, b2Vec2 bottomRight,
+               BodyType type, const PhysicsMaterial& material)
+    : m_BodyType(type), m_Name("")
 {
     b2Vec2 extents = 1.f/2.f * b2Abs(topLeft - bottomRight);
     b2Vec2 origin = 1.f/2.f * (topLeft + bottomRight);
-    size = b2Vec2{extents.x, extents.y};
-    body = createBoxBody(world, origin, extents);
-    transform = {origin.x, origin.y, size.x, size.y, 0.f};
+    halfExtents = b2Vec2{extents.x, extents.y};
+    body = createBoxBody(world, origin, extents, type, material);
+    transform = {origin.x, origin.y, halfExtents.x, halfExtents.y, 0.f};
     velocity = {0.f, 0.f};
 }
 
@@ -16,6 +18,12 @@ Entity::~Entity()
 {
     for (auto component : m_Components)
         delete component;
+
+    // Guarded rather than unconditional: an entity can outlive the world it
+    // was created in, and destroying a body whose world is already gone is
+    // not safe.
+    if (!B2_IS_NULL(body) && b2Body_IsValid(body))
+        b2DestroyBody(body);
 }
 
 void Entity::initialize()
@@ -25,21 +33,34 @@ void Entity::initialize()
 }
 
 /// Update all components linked to the entity.
+///
+/// Components only write intent here (forces, velocities, script decisions).
+/// The motion itself happens when World steps the physics world, and the
+/// result reaches transform and velocity through syncTransform().
 /// \param window Pointer to OpenGL window context
 /// \param deltaTime World frame time
 void Entity::update(GLFWwindow* window, float deltaTime)
 {
-    auto oldPos = b2Body_GetPosition(body);
-
     for (const auto& component : m_Components)
         component->update(window, deltaTime);
+}
 
-    auto newPos = b2Body_GetPosition(body);
-    velocity.x = (newPos.x - oldPos.x) / deltaTime;
-    velocity.y = (newPos.y - oldPos.y) / deltaTime;
+/// Publish the body's post-step state to the render transform.
+void Entity::syncTransform()
+{
+    if (B2_IS_NULL(body))
+        return;
 
-    transform.x += velocity.x * deltaTime;
-    transform.y += velocity.y * deltaTime;
+    const b2Vec2 position = b2Body_GetPosition(body);
+    const b2Rot rotation = b2Body_GetRotation(body);
+    const b2Vec2 linearVelocity = b2Body_GetLinearVelocity(body);
+
+    transform.x = position.x;
+    transform.y = position.y;
+    transform.rotation = b2Rot_GetAngle(rotation);
+
+    velocity.x = linearVelocity.x;
+    velocity.y = linearVelocity.y;
 }
 
 /// Render all components linked to the entity.
@@ -96,21 +117,35 @@ void Entity::removeTag(const std::string& tag)
     World::getInstance().removeEntityTag(this, tag);
 }
 
-/// Creates a box body for the entity
-b2BodyId Entity::createBoxBody(b2WorldId world, b2Vec2 origin, b2Vec2 extents)
+static b2BodyType toBox2DBodyType(BodyType type)
 {
-    b2BodyDef groundBodyDef = b2DefaultBodyDef();
-    groundBodyDef.position = origin;
+    switch (type)
+    {
+        case BodyType::Kinematic: return b2_kinematicBody;
+        case BodyType::Dynamic:   return b2_dynamicBody;
+        case BodyType::Static:
+        default:                  return b2_staticBody;
+    }
+}
 
-    b2Polygon groundBox = b2MakeBox(extents.x, extents.y);
+/// Creates a box body for the entity
+b2BodyId Entity::createBoxBody(b2WorldId world, b2Vec2 origin, b2Vec2 extents,
+                               BodyType type, const PhysicsMaterial& material)
+{
+    b2BodyDef bodyDef = b2DefaultBodyDef();
+    bodyDef.type = toBox2DBodyType(type);
+    bodyDef.position = origin;
 
-    b2BodyId body = b2CreateBody(world, &groundBodyDef);
+    b2Polygon box = b2MakeBox(extents.x, extents.y);
+
+    b2BodyId createdBody = b2CreateBody(world, &bodyDef);
 
     b2ShapeDef shapeDef = b2DefaultShapeDef();
-    shapeDef.density = 1.f;
-    shapeDef.material.friction = 0.f;
-    shapeDef.material.restitution = 1.f;
+    shapeDef.density = material.density;
+    shapeDef.material.friction = material.friction;
+    shapeDef.material.restitution = material.restitution;
+    shapeDef.isSensor = material.isSensor;
 
-    b2CreatePolygonShape(body, &shapeDef, &groundBox);
-    return body;
+    b2CreatePolygonShape(createdBody, &shapeDef, &box);
+    return createdBody;
 }

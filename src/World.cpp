@@ -18,12 +18,20 @@ World::World() = default;
 void World::initialize() {
     b2WorldId world = physics.getWorld();
 
-    auto cursor = new Entity(world, b2Vec2{-0.01f, -0.01f}, b2Vec2{0.01f, 0.01f});
+    // The crosshair is driven straight from the mouse, so it is kinematic
+    // rather than dynamic. Its shape is a sensor: it should mark where the
+    // cursor is without shoving the objects it is about to spawn there.
+    PhysicsMaterial cursorMaterial;
+    cursorMaterial.isSensor = true;
+
+    auto cursor = new Entity(world, b2Vec2{-0.01f, -0.01f}, b2Vec2{0.01f, 0.01f},
+                             BodyType::Kinematic, cursorMaterial);
     cursor->setName("cursor");
     cursor->addComponent(new BehaviourScript(*cursor, mouseFollow));
     cursor->addComponent(new BoxRenderer(*cursor, 0.2f, 0.15f, 1.0f));
 
-    auto ground = new Entity(world, b2Vec2{-2.f, -0.4f}, b2Vec2{2.f, -0.8f});
+    auto ground = new Entity(world, b2Vec2{-2.f, -0.4f}, b2Vec2{2.f, -0.8f},
+                             BodyType::Static);
     ground->setName("ground");
     ground->addComponent(new BoxRenderer(*ground, 4.0f, 1.f, 1.f));
 
@@ -34,35 +42,55 @@ void World::initialize() {
         i->initialize();
 }
 
-/// Update all entities
-void World::update(GLFWwindow *window, float deltaTime) {
-    // In your update loop:
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+/// Spawn one object at the cursor on the frame the left button goes down.
+///
+/// This used to fire on every frame the button was held, which with real
+/// dynamic bodies means dozens of overlapping boxes a second, all of them
+/// fighting to separate.
+void World::handleSpawnInput(GLFWwindow *window) {
+    const bool isPressed =
+            glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+
+    if (isPressed && !spawnButtonWasPressed) {
         auto cursor = getEntityWithName("cursor");
 
-        // Generate a random color
-        float r = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-        float g = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-        float b = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+        if (cursor != nullptr) {
+            b2Vec2 cursorPosition = b2Body_GetPosition(cursor->body);
+            auto gameObject = new Entity
+                    (
+                            physics.getWorld(),
+                            b2Vec2{cursorPosition.x - 0.2f, cursorPosition.y + 0.2f},
+                            b2Vec2{cursorPosition.x + 0.2f, cursorPosition.y - 0.2f},
+                            BodyType::Dynamic
+                    );
 
-        b2Vec2 cursorPosition = b2Body_GetPosition(cursor->body);
-        auto gameObject = new Entity
-                (
-                        physics.getWorld(),
-                        b2Vec2{cursorPosition.x - 0.2f, cursorPosition.y + 0.2f},
-                        b2Vec2{cursorPosition.x + 0.2f, cursorPosition.y - 0.2f}
-                );
-
-        gameObject->addComponent(new RigidBody(*gameObject, &entities, 1.5f));
-        gameObject->addComponent(new SphereRenderer(*gameObject, 1.0f, 32, 16)); // Use random color
-        entities.push_back(gameObject);
+            gameObject->addComponent(new RigidBody(*gameObject, 1.5f));
+            gameObject->addComponent(new SphereRenderer(*gameObject, 1.0f, 32, 16));
+            gameObject->initialize();
+            entities.push_back(gameObject);
+        }
     }
 
-    for (auto entity: entities) {
-        if (entity->getComponent<RigidBody>())
-            physics.update(entity, deltaTime);
+    spawnButtonWasPressed = isPressed;
+}
+
+/// Update all entities.
+///
+/// The order matters. Components only ever write intent (a force, a target
+/// velocity, a script decision); the world is then stepped once, as a whole;
+/// and only afterwards is the result published to the render transforms. The
+/// previous version stepped the world once per entity, inside the per-entity
+/// update, so a scene with ten falling objects ran ten times too fast.
+void World::update(GLFWwindow *window, float deltaTime) {
+    handleSpawnInput(window);
+
+    for (auto entity: entities)
         entity->update(window, deltaTime);
-    }
+
+    physics.step(deltaTime);
+
+    for (auto entity: entities)
+        entity->syncTransform();
 }
 
 /// Render all entities

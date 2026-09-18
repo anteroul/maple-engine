@@ -1,29 +1,46 @@
-#ifndef MAPLEENGINE_GRAVITY_H
-#define MAPLEENGINE_GRAVITY_H
+#ifndef MAPLEENGINE_RIGIDBODY_H
+#define MAPLEENGINE_RIGIDBODY_H
 
 #include "../Component.h"
-#include <vector>
 
+/// Gives an entity a mass and a handle on its simulated body.
+///
+/// This component does not simulate anything itself. Gravity, collision and
+/// restitution all come from the Box2D world, which World steps once per
+/// frame. What lives here is the gameplay-facing surface: read the velocity,
+/// ask whether the entity is standing on something, push it around.
 class RigidBody : public Component {
 public:
-    RigidBody(Entity& owner, std::vector<Entity*>* entities, float mass) : Component(owner)
-    {
-        m_Owner = &owner;
-        m_Entities = entities;
-        m_Mass = mass;
-        m_OnFreefall = true;
-        m_Speed = 0.f;
-    }
+    /// \param owner The entity containing this component
+    /// \param mass Mass of the body in kg. Overrides the mass Box2D derives
+    ///             from the shape's density. Ignored for non-dynamic bodies.
+    RigidBody(Entity& owner, float mass);
+
     void update(GLFWwindow* window, float deltaTime) override;
-    float getMass() const { return m_Mass; }
-    bool onFreefall() const { return m_OnFreefall; }
-    float m_Speed;
+
+    float getMass() const;
+    b2Vec2 getVelocity() const;
+    void setVelocity(b2Vec2 velocity);
+
+    /// Continuous push, in newtons. Use over a span of time.
+    void applyForce(b2Vec2 force);
+    /// Instantaneous change of momentum, in newton-seconds. Use for a hit.
+    void applyImpulse(b2Vec2 impulse);
+
+    /// True while a contact underneath this body is supporting it. Sampled
+    /// from the last world step, so scripts see the state the solver ended on.
+    bool isGrounded() const { return m_Grounded; }
+    bool onFreefall() const { return !m_Grounded; }
 private:
-    Entity* m_Owner;
-    std::vector<Entity*>* m_Entities;
+    /// How upward a contact normal has to point before it counts as ground.
+    /// cos(45 degrees), so anything up to a 45 degree slope is standable.
+    static constexpr float GROUND_NORMAL_THRESHOLD = 0.7071f;
+
+    void refreshGrounded();
+
     float m_Mass;
-    bool m_OnFreefall;
+    bool m_Grounded;
 };
 
 
-#endif //MAPLEENGINE_GRAVITY_H
+#endif //MAPLEENGINE_RIGIDBODY_H

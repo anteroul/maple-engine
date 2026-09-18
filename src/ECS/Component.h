@@ -13,6 +13,7 @@ public:
     virtual void update(GLFWwindow* glfwWindow, float deltaTime) {}
 
     Entity& getEntity() { return m_Owner; }
+    const Entity& getEntity() const { return m_Owner; }
     void setBody(b2BodyId body) { m_Owner.body = body; }
     b2BodyId getBody() const { return m_Owner.body; }
 

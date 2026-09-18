@@ -18,11 +18,13 @@ SphereRenderer::SphereRenderer(Entity& owner, glm::vec3 colour) : Component(owne
 /// Render sphere
 void SphereRenderer::renderLegacy() const
 {
-    const b2BodyId body = getBody();
+    // Read the transform the last physics step published rather than the body
+    // directly, so that everything drawn this frame comes from one snapshot.
+    const Transform& transform = getEntity().transform;
 
     glLoadIdentity();
-    b2Vec2 ballPosition = b2Body_GetPosition(body);
-    glTranslatef(ballPosition.x, ballPosition.y, 0.f);
+    glTranslatef(transform.x, transform.y, 0.f);
+    glRotatef(transform.rotation * 180.f / 3.14159265f, 0.f, 0.f, 1.f);
     glColor3f(m_Colour.r, m_Colour.g, m_Colour.b);
     gluSphere(m_Quadric, m_Radius, SLICES, SLICES);
     glFlush();

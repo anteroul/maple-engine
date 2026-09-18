@@ -1,7 +1,7 @@
 #include "App.h"
 #include "Log/msg.h"
 
-App::App(unsigned int width, unsigned int height, char* windowTitle, bool fullscreen)
+App::App(unsigned int width, unsigned int height, const char* windowTitle, bool fullscreen)
 {
     if (!glfwInit())
         ThrowError(EXIT_FAILURE, "Unable to initialize GLFW.");

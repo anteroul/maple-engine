@@ -7,7 +7,7 @@
 
 class App {
 public:
-    App(unsigned int width, unsigned int height, char* windowTitle, bool fullscreen);
+    App(unsigned int width, unsigned int height, const char* windowTitle, bool fullscreen);
     ~App();
     void Launch();
     static void ThrowError(int error, const char* description);

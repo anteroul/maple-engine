@@ -3,8 +3,8 @@
 
 #include <GLFW/glfw3.h>
 #include <box2d/box2d.h>
-#include "../Component.h"
-#include <RigidBody.h>
+#include "../ECS/Component.h"
+#include "../ECS/Components/RigidBody.h"
 
 #define SPEED (0.2)
 

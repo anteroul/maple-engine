@@ -1,7 +1,7 @@
 #ifndef MAPLEENGINE_GLOBALS_H
 #define MAPLEENGINE_GLOBALS_H
 
-#include "../App.h"
+#include <string>
 
 struct GameState {
     unsigned int level;

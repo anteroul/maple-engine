@@ -15,8 +15,10 @@ BoxRenderer::BoxRenderer(Entity &owner, glm::vec3 colour) : Component(owner), m_
 /// Render rectangle
 void BoxRenderer::renderLegacy() const
 {
-    const b2BodyId body = getBody();
-    const b2Vec2 position = b2Body_GetPosition(body);
+    // Read the transform the last physics step published rather than the body
+    // directly, so that everything drawn this frame comes from one snapshot.
+    const Transform& transform = getEntity().transform;
+    const glm::vec2 position = glm::vec2(transform.x, transform.y);
     glm::vec2 m_Size = glm::vec2(m_Width, m_Height);
 
     glLoadIdentity();

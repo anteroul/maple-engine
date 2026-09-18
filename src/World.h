@@ -39,7 +39,11 @@ private:
     std::map<std::string, std::list<Entity*>> tags;
     Physics physics;
     GameState state;
+    /// Edge detection for the spawn button, so holding it spawns one object.
+    bool spawnButtonWasPressed = false;
     World();
+
+    void handleSpawnInput(GLFWwindow* window);
 };
 
 #endif //MAPLEENGINE_WORLD_H

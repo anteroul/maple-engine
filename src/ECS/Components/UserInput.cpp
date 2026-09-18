@@ -10,6 +10,11 @@ UserInput::UserInput(Entity &owner, float speed) : Component(owner)
 }
 
 /// Move entity with arrow keys.
+///
+/// A simulated entity is pushed, not placed: applying a force leaves the
+/// solver in charge of the resulting motion, so the entity still collides,
+/// still slides along the ground and still falls. Entities without a
+/// RigidBody have no simulation to respect and are moved directly.
 /// \param window OpenGL window context.
 /// \param deltaTime World frame time.
 void UserInput::update(GLFWwindow* window, float deltaTime)
@@ -19,23 +24,34 @@ void UserInput::update(GLFWwindow* window, float deltaTime)
     if (B2_IS_NULL(body))
         return;
 
-    // Do physics apply?
-    if (getEntity().getComponent<RigidBody>())
-    {
-        float acceleration = Physics::getAcceleration(m_Speed, deltaTime) * deltaTime / getEntity().getComponent<RigidBody>()->getMass();
+    const bool left = glfwGetKey(window, GLFW_KEY_LEFT) || glfwGetKey(window, GLFW_KEY_A);
+    const bool right = glfwGetKey(window, GLFW_KEY_RIGHT) || glfwGetKey(window, GLFW_KEY_D);
+    const bool up = glfwGetKey(window, GLFW_KEY_UP) || glfwGetKey(window, GLFW_KEY_W);
+    const bool down = glfwGetKey(window, GLFW_KEY_DOWN) || glfwGetKey(window, GLFW_KEY_S);
 
-        if (glfwGetKey(window, GLFW_KEY_LEFT) || glfwGetKey(window, GLFW_KEY_A))
-            b2Body_SetTransform(body, b2Vec2{b2Body_GetPosition(body).x - acceleration, b2Body_GetPosition(body).y}, b2Body_GetRotation(body));
-        if (glfwGetKey(window, GLFW_KEY_RIGHT) || glfwGetKey(window, GLFW_KEY_D))
-            b2Body_SetTransform(body, b2Vec2{b2Body_GetPosition(body).x + acceleration, b2Body_GetPosition(body).y}, b2Body_GetRotation(body));
+    RigidBody* rigidBody = getEntity().getComponent<RigidBody>();
+
+    // Do physics apply?
+    if (rigidBody)
+    {
+        const float force = Physics::getForce(rigidBody->getMass(), m_Speed, deltaTime);
+
+        if (left)
+            rigidBody->applyForce(b2Vec2{-force, 0.f});
+        if (right)
+            rigidBody->applyForce(b2Vec2{force, 0.f});
     } else {
-        if (glfwGetKey(window, GLFW_KEY_LEFT) || glfwGetKey(window, GLFW_KEY_A))
-            b2Body_SetTransform(body, b2Vec2{b2Body_GetPosition(body).x - m_Speed, b2Body_GetPosition(body).y}, b2Body_GetRotation(body));
-        if (glfwGetKey(window, GLFW_KEY_RIGHT) || glfwGetKey(window, GLFW_KEY_D))
-            b2Body_SetTransform(body, b2Vec2{b2Body_GetPosition(body).x + m_Speed, b2Body_GetPosition(body).y}, b2Body_GetRotation(body));
-        if (glfwGetKey(window, GLFW_KEY_UP) || glfwGetKey(window, GLFW_KEY_W))
-            b2Body_SetTransform(body, b2Vec2{b2Body_GetPosition(body).x, b2Body_GetPosition(body).y + m_Speed}, b2Body_GetRotation(body));
-        if (glfwGetKey(window, GLFW_KEY_DOWN) || glfwGetKey(window, GLFW_KEY_S))
-            b2Body_SetTransform(body, b2Vec2{b2Body_GetPosition(body).x, b2Body_GetPosition(body).y - m_Speed}, b2Body_GetRotation(body));
+        b2Vec2 position = b2Body_GetPosition(body);
+
+        if (left)
+            position.x -= m_Speed;
+        if (right)
+            position.x += m_Speed;
+        if (up)
+            position.y += m_Speed;
+        if (down)
+            position.y -= m_Speed;
+
+        b2Body_SetTransform(body, position, b2Body_GetRotation(body));
     }
 }

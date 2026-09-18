@@ -26,10 +26,8 @@ add_executable(MapleEngine
         src/ECS/Components/UserInput.cpp
         src/ECS/Components/Shader.cpp
         src/ECS/Rendering/MeshGPU.cpp
-        src/ECS/Geometry/MeshData.cpp
         src/ECS/Geometry/SphereGeometry.cpp
         src/ECS/Geometry/BoxGeometry.cpp
-        src/Util/EntityManager.cpp
 )
 
 target_link_libraries(MapleEngine PUBLIC ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${lib/stb_image.h} -lGLX -lglfw -lbox2d)

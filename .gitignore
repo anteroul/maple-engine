@@ -9,6 +9,4 @@
 Makefile
 MapleEngine
 *.cmake
-*.nix
-flake.lock
 CMakeCache.txt

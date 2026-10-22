@@ -3,7 +3,6 @@
 
 #include "ECS/Entity.h"
 #include "Physics.h"
-#include "Util/globals.h"
 #include <GLFW/glfw3.h>
 #include <algorithm>
 #include <functional>
@@ -52,7 +51,6 @@ public:
     void removeEntityTag(Entity* entity, const std::string& tag);
     std::list<Entity*> getEntitiesWithTag(const std::string& tag) const;
     Entity* getEntityWithTag(const std::string& tag) const;
-    int getLevel();
 private:
     static World gameInstance;
     std::vector<Entity*> entities;
@@ -61,7 +59,6 @@ private:
     std::map<std::string, Entity*> names;
     std::map<std::string, std::list<Entity*>> tags;
     Physics physics;
-    GameState state;
     SceneSetup sceneSetup;
 
     struct ViewBounds {

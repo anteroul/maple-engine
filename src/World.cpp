@@ -186,7 +186,3 @@ Entity *World::getEntityWithTag(const std::string &tag) const {
     else
         return *it;
 }
-
-int World::getLevel() {
-    return state.level;
-}

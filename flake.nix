@@ -65,7 +65,13 @@
         # libXrandr, libXinerama, libXcursor and libXi by hand is redundant
         # -- and the xorg.* aliases are deprecated on current unstable.
         # libGLU is not used by any source file in this repo.
-        buildDeps = [ box2d3 pkgs.glfw pkgs.glew pkgs.libGL pkgs.glm ];
+        # miniaudio from nixpkgs links PulseAudio, ALSA, JACK and sndio
+        # directly, so sound works on NixOS without putting them on
+        # LD_LIBRARY_PATH. They are listed here only because miniaudio's .pc
+        # file names them, and pkg-config complains if it cannot find them.
+        audioDeps = [ pkgs.miniaudio pkgs.libpulseaudio pkgs.alsa-lib pkgs.libjack2 pkgs.sndio ];
+
+        buildDeps = [ box2d3 pkgs.glfw pkgs.glew pkgs.libGL pkgs.glm ] ++ audioDeps;
 
         maple-engine = pkgs.stdenv.mkDerivation {
           pname = "maple-engine";

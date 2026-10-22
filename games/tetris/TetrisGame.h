@@ -96,6 +96,8 @@ public:
     std::optional<PieceType> heldPiece() const { return m_Held; }
     bool canHold() const { return m_CanHold; }
 
+    /// Pieces locked into the stack since the game started.
+    int piecesLocked() const { return m_PiecesLocked; }
     std::uint32_t score() const { return m_Score; }
     int lines() const { return m_Lines; }
     int level() const { return 1 + m_Lines / 10; }
@@ -144,6 +146,7 @@ private:
 
     std::uint32_t m_Score = 0;
     int m_Lines = 0;
+    int m_PiecesLocked = 0;
     bool m_GameOver = false;
     bool m_Paused = false;
     std::vector<ClearedCell> m_ClearedCells;

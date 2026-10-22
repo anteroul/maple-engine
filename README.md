@@ -6,6 +6,10 @@ Install required dependencies:
 - Ubuntu/Debian: `apt install build-essential cmake libgl-dev libglm-dev libglew-dev libglfw3-dev`
 - Arch/Manjaro: `pacman -S base-devel cmake glut glm glfw glew`
 
+Audio uses [miniaudio](https://miniaud.io). If it is installed (so that
+`pkg-config miniaudio` finds it) that copy is used; otherwise CMake downloads
+miniaudio 0.11.25 and builds it with the engine.
+
 Clone the repository:
 
 ```
@@ -95,6 +99,28 @@ int main()
 `World::addEntity()` and `World::destroyEntity()` are safe to call from inside
 a component's update: both take effect at the end of the current update.
 
+## Audio
+
+`Audio::getInstance()` plays sound effects fire-and-forget, plus one looping
+music track. Sounds can come from files (WAV, FLAC, MP3) or be generated in
+code with the chiptune synthesizer in `src/Audio/Synth.h`, so a game needs no
+audio files at all:
+
+```cpp
+#include "Audio/Audio.h"
+#include "Audio/Synth.h"
+
+// A short rising blip.
+auto jump = synth::share(synth::render({{synth::Waveform::Square, 400.f, 800.f, 0.1f}}));
+Audio::getInstance().play(jump);
+
+Audio::getInstance().play("sounds/explosion.wav", 0.8f);
+Audio::getInstance().playMusic("music/theme.mp3", 0.5f);
+```
+
+If no audio device can be opened, the engine prints a warning and every call
+does nothing, so games never need to check first.
+
 ## Maple Tetris
 
 `games/tetris` is a Tetris clone built on the engine. It follows the modern
@@ -116,7 +142,12 @@ rows break up into Box2D bodies that tumble off the board.
 | C, Shift               | Hold                        |
 | P                      | Pause                       |
 | R                      | Restart                     |
+| M                      | Music on / off              |
 | Esc                    | Quit                        |
+
+All of its sound, including a chiptune arrangement of Korobeiniki (the
+public-domain folk song behind the Tetris theme), is synthesized at start up.
+The music speeds up a little with each level.
 
 The side panel shows the next pieces, the held piece, and the score (white),
 lines (cyan) and level (orange). The window title spells them out too.

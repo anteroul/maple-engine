@@ -10,6 +10,7 @@
  *   C, Shift                hold
  *   P                       pause
  *   R                       restart
+ *   M                       music on / off
  *   Esc                     quit
  */
 #include "App.h"

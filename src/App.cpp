@@ -1,5 +1,6 @@
 #include "App.h"
 #include "Log/msg.h"
+#include "Audio/Audio.h"
 
 App::App(unsigned int width, unsigned int height, const char* windowTitle, bool fullscreen)
 {
@@ -38,6 +39,8 @@ App::App(unsigned int width, unsigned int height, const char* windowTitle, bool 
 App::~App()
 {
     glfwSetWindowShouldClose(window, true);
+    // Stop the audio thread before the program starts tearing down statics.
+    Audio::shutdown();
     glfwTerminate();
     printf("%s \bSUCCESS: Application closed successfully.\n", SUCCESS);
 }

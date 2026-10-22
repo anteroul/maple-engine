@@ -3,6 +3,7 @@
 #include "World.h"
 #include "ECS/Components/BehaviourScript.h"
 #include "Scripts/ExpireAfter.h"
+#include "Audio/Audio.h"
 #include <algorithm>
 #include <cstdio>
 #include <random>
@@ -20,6 +21,11 @@ constexpr float DAS_REPEAT = 0.05f;
 constexpr float MAX_FRAME_TIME = 0.1f;
 /// Seconds debris stays alive. By then it has fallen off the screen.
 constexpr float DEBRIS_LIFETIME = 2.5f;
+
+constexpr float MUSIC_VOLUME = 0.6f;
+/// The music speeds up a little with every level, up to this rate.
+constexpr float MUSIC_PITCH_STEP = 0.02f;
+constexpr float MAX_MUSIC_PITCH = 1.3f;
 
 glm::vec3 mix(const glm::vec3& from, const glm::vec3& to, float amount)
 {
@@ -86,17 +92,31 @@ void TetrisController::KeyBinding::poll(GLFWwindow* window)
 }
 
 TetrisController::TetrisController(Entity& owner, TetrisViews views)
-    : Component(owner), m_Views(std::move(views))
+    : Component(owner), m_Views(std::move(views)), m_Sounds(createTetrisSounds())
 {}
 
 void TetrisController::update(GLFWwindow* window, float deltaTime)
 {
     deltaTime = std::min(deltaTime, MAX_FRAME_TIME);
 
+    // Started from the first frame rather than the constructor, so the music
+    // does not run ahead while the scene is still being built.
+    if (!m_MusicStarted)
+    {
+        startMusic();
+        m_MusicStarted = true;
+    }
+
+    const int linesBefore = m_Game.lines();
+    const int levelBefore = m_Game.level();
+    const int lockedBefore = m_Game.piecesLocked();
+    m_HardDropped = false;
+
     handleInput(window, deltaTime);
     m_Game.update(deltaTime, m_SoftDrop.held);
 
     spawnDebris(m_Game.takeClearedCells());
+    playEventSounds(linesBefore, levelBefore, lockedBefore);
 
     if (m_Game.isGameOver() && !m_WasGameOver)
         shatterStack();
@@ -114,41 +134,64 @@ void TetrisController::update(GLFWwindow* window, float deltaTime)
 void TetrisController::handleInput(GLFWwindow* window, float deltaTime)
 {
     for (KeyBinding* binding: {&m_Left, &m_Right, &m_SoftDrop, &m_HardDrop, &m_RotateClockwise,
-                               &m_RotateCounterClockwise, &m_Hold, &m_Pause, &m_Restart})
+                               &m_RotateCounterClockwise, &m_Hold, &m_Pause, &m_Restart,
+                               &m_ToggleMusic})
         binding->poll(window);
+
+    if (m_ToggleMusic.pressed)
+    {
+        m_MusicEnabled = !m_MusicEnabled;
+
+        if (m_MusicEnabled && !m_Game.isGameOver())
+            startMusic();
+        else
+            Audio::getInstance().stopMusic();
+    }
 
     if (m_Restart.pressed)
     {
         m_Game.reset();
         m_RepeatDirection = 0;
+        startMusic();
         return;
     }
 
     if (m_Pause.pressed && !m_Game.isGameOver())
+    {
         m_Game.setPaused(!m_Game.isPaused());
+        Audio::getInstance().setMusicPaused(m_Game.isPaused());
+        playSound(m_Sounds.pause);
+    }
 
     if (m_Game.isPaused() || m_Game.isGameOver())
         return;
 
     // Rotate and hold before moving, so a rotation pressed on the same frame
     // as a slide is checked against the piece's current position.
-    if (m_RotateClockwise.pressed)
-        m_Game.rotateClockwise();
-    if (m_RotateCounterClockwise.pressed)
-        m_Game.rotateCounterClockwise();
-    if (m_Hold.pressed)
-        m_Game.hold();
+    if (m_RotateClockwise.pressed && m_Game.rotateClockwise())
+        playSound(m_Sounds.rotate);
+    if (m_RotateCounterClockwise.pressed && m_Game.rotateCounterClockwise())
+        playSound(m_Sounds.rotate);
+    if (m_Hold.pressed && m_Game.hold())
+        playSound(m_Sounds.hold);
 
     handleSidewaysMovement(deltaTime);
 
     if (m_HardDrop.pressed)
+    {
         m_Game.hardDrop();
+        m_HardDropped = true;
+        playSound(m_Sounds.hardDrop);
+    }
 }
 
 void TetrisController::handleSidewaysMovement(float deltaTime)
 {
     auto step = [this](int direction) {
-        return direction < 0 ? m_Game.moveLeft() : m_Game.moveRight();
+        const bool moved = direction < 0 ? m_Game.moveLeft() : m_Game.moveRight();
+        if (moved)
+            playSound(m_Sounds.move);
+        return moved;
     };
 
     // The most recently pressed direction wins, as on most modern clients.
@@ -295,4 +338,43 @@ void TetrisController::shatterStack()
         for (int x = 0; x < BOARD_WIDTH; ++x)
             if (const auto cell = m_Game.cellAt(x, y))
                 spawnDebrisCell(layout::cellCentre(x, y), layout::pieceColour(*cell));
+}
+
+void TetrisController::playSound(const SoundClipPtr& clip, float volume)
+{
+    Audio::getInstance().play(clip, volume);
+}
+
+void TetrisController::startMusic()
+{
+    Audio& audio = Audio::getInstance();
+
+    if (!m_MusicEnabled)
+        return;
+
+    audio.playMusic(m_Sounds.music, MUSIC_VOLUME);
+    audio.setMusicPitch(1.f);
+}
+
+void TetrisController::playEventSounds(int linesBefore, int levelBefore, int lockedBefore)
+{
+    const int cleared = m_Game.lines() - linesBefore;
+
+    if (cleared > 0)
+        playSound(m_Sounds.lineClear[std::min(cleared, 4) - 1]);
+    else if (m_Game.piecesLocked() > lockedBefore && !m_HardDropped)
+        playSound(m_Sounds.lock);
+
+    if (m_Game.level() > levelBefore)
+    {
+        playSound(m_Sounds.levelUp);
+        Audio::getInstance().setMusicPitch(
+                std::min(1.f + MUSIC_PITCH_STEP * (float)(m_Game.level() - 1), MAX_MUSIC_PITCH));
+    }
+
+    if (m_Game.isGameOver() && !m_WasGameOver)
+    {
+        Audio::getInstance().stopMusic();
+        playSound(m_Sounds.gameOver);
+    }
 }

@@ -2,6 +2,7 @@
 #define MAPLETETRIS_TETRISCONTROLLER_H
 
 #include "TetrisGame.h"
+#include "TetrisAudio.h"
 #include "SevenSegmentDisplay.h"
 #include "ECS/Component.h"
 #include "ECS/Components/BoxRenderer.h"
@@ -54,6 +55,10 @@ private:
     void refreshReadouts(GLFWwindow* window);
     void spawnDebris(const std::vector<tetris::ClearedCell>& cells);
     void shatterStack();
+    /// Play what changed this frame: locks, clears, level ups, game over.
+    void playEventSounds(int linesBefore, int levelBefore, int lockedBefore);
+    void startMusic();
+    void playSound(const SoundClipPtr& clip, float volume = 1.f);
 
     tetris::Game m_Game;
     TetrisViews m_Views;
@@ -67,6 +72,7 @@ private:
     KeyBinding m_Hold{GLFW_KEY_C, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_RIGHT_SHIFT};
     KeyBinding m_Pause{GLFW_KEY_P};
     KeyBinding m_Restart{GLFW_KEY_R};
+    KeyBinding m_ToggleMusic{GLFW_KEY_M};
 
     /// Direction auto-repeat is moving in: -1 left, 1 right, 0 none.
     int m_RepeatDirection = 0;
@@ -74,6 +80,13 @@ private:
 
     bool m_WasGameOver = false;
     std::string m_Title;
+
+    TetrisSounds m_Sounds;
+    bool m_MusicEnabled = true;
+    bool m_MusicStarted = false;
+    /// Set by a hard drop this frame, so its thud is not followed by the
+    /// quieter lock sound for the same piece.
+    bool m_HardDropped = false;
 };
 
 #endif //MAPLETETRIS_TETRISCONTROLLER_H

@@ -117,6 +117,7 @@ void Game::reset()
     m_Held.reset();
     m_Score = 0;
     m_Lines = 0;
+    m_PiecesLocked = 0;
     m_GameOver = false;
     m_Paused = false;
     m_ClearedCells.clear();
@@ -322,6 +323,7 @@ void Game::lockPiece()
             anyCellVisible = true;
     }
 
+    m_PiecesLocked++;
     clearLines();
 
     // Lock out: the piece came to rest entirely above the visible board.

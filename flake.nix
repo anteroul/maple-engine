@@ -75,8 +75,8 @@
           nativeBuildInputs = nativeDeps;
           buildInputs = buildDeps;
 
-          # The physics tests never open a window, so they run in the
-          # sandbox without a display.
+          # The tests never open a window, so they run in the sandbox
+          # without a display.
           doCheck = true;
           checkPhase = ''
             runHook preCheck
@@ -88,6 +88,7 @@
           installPhase = ''
             runHook preInstall
             install -Dm755 MapleEngine $out/bin/MapleEngine
+            install -Dm755 MapleTetris $out/bin/MapleTetris
             runHook postInstall
           '';
 
@@ -98,6 +99,12 @@
         packages.default = maple-engine;
         packages.maple-engine = maple-engine;
         checks.default = maple-engine;
+
+        # nix run .#tetris
+        apps.tetris = {
+          type = "app";
+          program = "${maple-engine}/bin/MapleTetris";
+        };
 
         devShells.default = pkgs.mkShell {
           # mkShell's `packages` is the right place for both tools and

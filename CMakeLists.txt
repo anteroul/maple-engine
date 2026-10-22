@@ -3,18 +3,14 @@ project(MapleEngine)
 
 set(CMAKE_CXX_STANDARD 23)
 
+option(MAPLE_BUILD_TESTS "Build the headless tests" ON)
+
 find_package(OpenGL REQUIRED)
-include_directories(${OPENGL_INCLUDE_DIR})
-
 find_package(GLEW REQUIRED)
-include_directories(${GLEW_INCLUDE_DIRS})
-
 find_package(glfw3 REQUIRED)
-include_directories(${GLFW_INCLUDE_DIRS})
-link_libraries(${GLFW_LIBRARY_DIRS})
 
-add_executable(MapleEngine
-        src/entrypoint/main.cpp
+# The engine, shared by the demo and the games built on it.
+add_library(MapleEngineCore STATIC
         src/App.cpp
         src/World.cpp
         src/Physics.cpp
@@ -30,4 +26,34 @@ add_executable(MapleEngine
         src/ECS/Geometry/BoxGeometry.cpp
 )
 
-target_link_libraries(MapleEngine PUBLIC ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${lib/stb_image.h} -lGLX -lglfw -lbox2d)
+# Games include engine headers as "World.h", "ECS/...", "Scripts/...".
+target_include_directories(MapleEngineCore PUBLIC
+        src ${OPENGL_INCLUDE_DIR} ${GLEW_INCLUDE_DIRS} ${GLFW_INCLUDE_DIRS})
+target_link_libraries(MapleEngineCore PUBLIC ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} -lGLX -lglfw -lbox2d)
+
+# The engine's sandbox scene.
+add_executable(MapleEngine
+        src/entrypoint/main.cpp
+        src/Scenes/DemoScene.cpp
+)
+target_link_libraries(MapleEngine PRIVATE MapleEngineCore)
+
+# The rules have no engine dependencies, so the tests can link them alone.
+add_library(MapleTetrisRules STATIC games/tetris/TetrisGame.cpp)
+target_include_directories(MapleTetrisRules PUBLIC games/tetris)
+
+add_executable(MapleTetris
+        games/tetris/main.cpp
+        games/tetris/TetrisController.cpp
+        games/tetris/TetrisScene.cpp
+)
+target_link_libraries(MapleTetris PRIVATE MapleEngineCore MapleTetrisRules)
+
+if(MAPLE_BUILD_TESTS)
+    # The tests never open a window, so they run without a display.
+    enable_testing()
+
+    add_executable(MapleTetrisTests tests/tetris_tests.cpp)
+    target_link_libraries(MapleTetrisTests PRIVATE MapleTetrisRules)
+    add_test(NAME tetris COMMAND MapleTetrisTests)
+endif()

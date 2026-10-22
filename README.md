@@ -63,7 +63,7 @@ the solver move it.
 
 ### Tests
 
-The physics tests are headless, so they need no display:
+The tests are headless, so they need no display:
 
 ```
 cmake --build build
@@ -71,3 +71,55 @@ ctest --test-dir build --output-on-failure
 ```
 
 Configure with `-DMAPLE_BUILD_TESTS=OFF` to skip them.
+
+## Scenes
+
+A game hands the engine a function that builds its scene, and can choose
+which part of world space the camera shows:
+
+```cpp
+void createMyScene(World& game)
+{
+    game.setView(-1.f, 17.f, -1.f, 21.f);  // letterboxed, aspect preserved
+    game.addEntity(new Entity(...));
+}
+
+int main()
+{
+    App app(540, 660, "My Game", false);
+    World::getInstance().setScene(createMyScene);
+    app.Launch();
+}
+```
+
+`World::addEntity()` and `World::destroyEntity()` are safe to call from inside
+a component's update: both take effect at the end of the current update.
+
+## Maple Tetris
+
+`games/tetris` is a Tetris clone built on the engine. It follows the modern
+guideline: SRS rotation with wall kicks, a 7-bag randomiser, hold, a
+three-piece preview, a ghost piece, lock delay and guideline scoring. Cleared
+rows break up into Box2D bodies that tumble off the board.
+
+```
+./build/MapleTetris        # or: nix run .#tetris
+```
+
+| Key                    | Action                      |
+|------------------------|-----------------------------|
+| Left / Right, A / D    | Move                        |
+| Down, S                | Soft drop                   |
+| Space                  | Hard drop                   |
+| Up, X, W               | Rotate clockwise            |
+| Z, Ctrl                | Rotate counter-clockwise    |
+| C, Shift               | Hold                        |
+| P                      | Pause                       |
+| R                      | Restart                     |
+| Esc                    | Quit                        |
+
+The side panel shows the next pieces, the held piece, and the score (white),
+lines (cyan) and level (orange). The window title spells them out too.
+
+The rules live in `games/tetris/TetrisGame.*`, with no engine dependencies, so
+`tests/tetris_tests.cpp` checks them headless.

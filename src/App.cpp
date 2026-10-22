@@ -21,11 +21,15 @@ App::App(unsigned int width, unsigned int height, const char* windowTitle, bool 
     glfwMakeContextCurrent(window);
     glfwSetCursorPosCallback(window, HandleMouseMotion);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+    // Input is polled once a frame. Sticky keys and buttons latch a press
+    // until the next poll, so a tap shorter than a frame still registers.
+    glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_TRUE);
+    glfwSetInputMode(window, GLFW_STICKY_MOUSE_BUTTONS, GLFW_TRUE);
 
     if (fullscreen)
         glfwMaximizeWindow(window);
 
-    if (!glfwInit())
+    if (glewInit() != GLEW_OK)
         ThrowError(EXIT_FAILURE, "Unable to initialize GLEW.");
     else
         printf("%s \bSUCCESS: GLEW initialized successfully.\n", SUCCESS);

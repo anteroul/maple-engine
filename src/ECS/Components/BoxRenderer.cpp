@@ -12,23 +12,23 @@ BoxRenderer::BoxRenderer(Entity &owner, glm::vec3 colour) : Component(owner), m_
 }
 */
 
-/// Render rectangle
+/// Render rectangle, centred on the entity and turned with its body.
 void BoxRenderer::renderLegacy() const
 {
     // Read the transform the last physics step published rather than the body
     // directly, so that everything drawn this frame comes from one snapshot.
     const Transform& transform = getEntity().transform;
-    const glm::vec2 position = glm::vec2(transform.x, transform.y);
-    glm::vec2 m_Size = glm::vec2(m_Width, m_Height);
+    const float halfWidth = m_Width / 2.f;
+    const float halfHeight = m_Height / 2.f;
 
     glLoadIdentity();
-    glBegin(GL_QUADS);
-    glTranslatef(position.x, position.y, 0.f);
+    glTranslatef(transform.x, transform.y, 0.f);
+    glRotatef(transform.rotation * 180.f / 3.14159265f, 0.f, 0.f, 1.f);
     glColor3f(m_Colour.r, m_Colour.g, m_Colour.b);
-    glVertex2f(position.x - m_Size.x / 2, position.y - m_Size.y);
-    glVertex2f(position.x - m_Size.x / 2, position.y);
-    glVertex2f(position.x + m_Size.x / 2, position.y);
-    glVertex2f(position.x + m_Size.x / 2, position.y - m_Size.y);
+    glBegin(GL_QUADS);
+    glVertex2f(-halfWidth, -halfHeight);
+    glVertex2f(-halfWidth, halfHeight);
+    glVertex2f(halfWidth, halfHeight);
+    glVertex2f(halfWidth, -halfHeight);
     glEnd();
-    glFlush();
 }

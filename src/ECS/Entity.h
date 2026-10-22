@@ -57,6 +57,11 @@ public:
            const PhysicsMaterial& material = PhysicsMaterial{});
     ~Entity();
 
+    /// An entity owns its body and its components, so a copy would destroy
+    /// both twice.
+    Entity(const Entity&) = delete;
+    Entity& operator=(const Entity&) = delete;
+
     /// Transform data, published from the body by syncTransform()
     struct Transform transform{};
     struct Velocity velocity{};

@@ -10,3 +10,7 @@ Makefile
 MapleEngine
 *.cmake
 CMakeCache.txt
+/Testing/
+MapleTetris
+MapleTetrisTests
+*.a

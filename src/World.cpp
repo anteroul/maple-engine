@@ -1,10 +1,4 @@
 #include "World.h"
-#include "ECS/Components/UserInput.h"
-#include "ECS/Components/BoxRenderer.h"
-#include "ECS/Components/SphereRenderer.h"
-#include "ECS/Components/RigidBody.h"
-#include "ECS/Components/BehaviourScript.h"
-#include "Scripts/MouseFollow.h"
 
 World World::gameInstance;
 
@@ -14,64 +8,29 @@ World &World::getInstance() {
 
 World::World() = default;
 
-/// Initialize all entities
+void World::setScene(SceneSetup setup) {
+    sceneSetup = std::move(setup);
+}
+
+void World::setView(float left, float right, float bottom, float top) {
+    view = ViewBounds{left, right, bottom, top};
+}
+
+void World::setClearColour(float r, float g, float b) {
+    clearColour[0] = r;
+    clearColour[1] = g;
+    clearColour[2] = b;
+}
+
+/// Build the scene and initialize all entities
 void World::initialize() {
-    b2WorldId world = physics.getWorld();
+    if (sceneSetup)
+        sceneSetup(*this);
 
-    // The crosshair is driven straight from the mouse, so it is kinematic
-    // rather than dynamic. Its shape is a sensor: it should mark where the
-    // cursor is without shoving the objects it is about to spawn there.
-    PhysicsMaterial cursorMaterial;
-    cursorMaterial.isSensor = true;
-
-    auto cursor = new Entity(world, b2Vec2{-0.01f, -0.01f}, b2Vec2{0.01f, 0.01f},
-                             BodyType::Kinematic, cursorMaterial);
-    cursor->setName("cursor");
-    cursor->addComponent(new BehaviourScript(*cursor, mouseFollow));
-    cursor->addComponent(new BoxRenderer(*cursor, 0.2f, 0.15f, 1.0f));
-
-    auto ground = new Entity(world, b2Vec2{-2.f, -0.4f}, b2Vec2{2.f, -0.8f},
-                             BodyType::Static);
-    ground->setName("ground");
-    ground->addComponent(new BoxRenderer(*ground, 4.0f, 1.f, 1.f));
-
-    entities.push_back(ground);
-    entities.push_back(cursor);
+    flushPendingEntities();
 
     for (auto i: entities)
         i->initialize();
-}
-
-/// Spawn one object at the cursor on the frame the left button goes down.
-///
-/// This used to fire on every frame the button was held, which with real
-/// dynamic bodies means dozens of overlapping boxes a second, all of them
-/// fighting to separate.
-void World::handleSpawnInput(GLFWwindow *window) {
-    const bool isPressed =
-            glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
-
-    if (isPressed && !spawnButtonWasPressed) {
-        auto cursor = getEntityWithName("cursor");
-
-        if (cursor != nullptr) {
-            b2Vec2 cursorPosition = b2Body_GetPosition(cursor->body);
-            auto gameObject = new Entity
-                    (
-                            physics.getWorld(),
-                            b2Vec2{cursorPosition.x - 0.2f, cursorPosition.y + 0.2f},
-                            b2Vec2{cursorPosition.x + 0.2f, cursorPosition.y - 0.2f},
-                            BodyType::Dynamic
-                    );
-
-            gameObject->addComponent(new RigidBody(*gameObject, 1.5f));
-            gameObject->addComponent(new SphereRenderer(*gameObject, 1.0f, 32, 16));
-            gameObject->initialize();
-            entities.push_back(gameObject);
-        }
-    }
-
-    spawnButtonWasPressed = isPressed;
 }
 
 /// Update all entities.
@@ -82,10 +41,10 @@ void World::handleSpawnInput(GLFWwindow *window) {
 /// previous version stepped the world once per entity, inside the per-entity
 /// update, so a scene with ten falling objects ran ten times too fast.
 void World::update(GLFWwindow *window, float deltaTime) {
-    handleSpawnInput(window);
-
     for (auto entity: entities)
         entity->update(window, deltaTime);
+
+    flushPendingEntities();
 
     physics.step(deltaTime);
 
@@ -93,15 +52,77 @@ void World::update(GLFWwindow *window, float deltaTime) {
         entity->syncTransform();
 }
 
+/// Point the viewport and projection at the scene's view.
+///
+/// Without a view the scene draws straight in normalised device coordinates
+/// over the whole framebuffer. With one, the largest viewport that keeps the
+/// view's aspect ratio is centred in the window, so resizing letterboxes the
+/// scene instead of stretching it.
+void World::applyView(GLFWwindow *window) const {
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+    if (!view || width <= 0 || height <= 0) {
+        glViewport(0, 0, width, height);
+        glMatrixMode(GL_MODELVIEW);
+        return;
+    }
+
+    const float viewAspect = (view->right - view->left) / (view->top - view->bottom);
+    int viewportWidth = width;
+    int viewportHeight = height;
+
+    if ((float)width / (float)height > viewAspect)
+        viewportWidth = (int)((float)height * viewAspect);
+    else
+        viewportHeight = (int)((float)width / viewAspect);
+
+    glViewport((width - viewportWidth) / 2, (height - viewportHeight) / 2,
+               viewportWidth, viewportHeight);
+    glOrtho(view->left, view->right, view->bottom, view->top, -1.0, 1.0);
+    glMatrixMode(GL_MODELVIEW);
+}
+
 /// Render all entities
 void World::render(GLFWwindow *window) {
-    glClearColor(0.f, 0.f, 0.f, 1.0f);
+    glClearColor(clearColour[0], clearColour[1], clearColour[2], 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    applyView(window);
 
     for (auto entity: entities)
         entity->render();
 
     glfwSwapBuffers(window);
+}
+
+void World::addEntity(Entity *entity) {
+    pendingAdditions.push_back(entity);
+}
+
+void World::destroyEntity(Entity *entity) {
+    if (std::find(pendingDestructions.begin(), pendingDestructions.end(), entity)
+            == pendingDestructions.end())
+        pendingDestructions.push_back(entity);
+}
+
+void World::flushPendingEntities() {
+    for (auto entity: pendingAdditions)
+        entities.push_back(entity);
+    pendingAdditions.clear();
+
+    for (auto entity: pendingDestructions) {
+        entities.erase(std::remove(entities.begin(), entities.end(), entity), entities.end());
+
+        if (!entity->getName().empty())
+            removeEntityName(entity, entity->getName());
+
+        delete entity;
+    }
+    pendingDestructions.clear();
 }
 
 void World::setEntityName(Entity *entity, const std::string &name) {

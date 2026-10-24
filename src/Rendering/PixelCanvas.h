@@ -33,11 +33,18 @@ public:
     /// projection, uploading the pixels first if they changed.
     void draw(glm::vec2 bottomLeft, glm::vec2 size) const;
 
+    /// Bind the canvas to image unit `unit` as a write-only rgba16f image,
+    /// for a compute shader to fill in instead of setPixel. What it writes
+    /// replaces the pixels set from the CPU until the next setPixel or fill.
+    void bindImage(GLuint unit);
+
 private:
+    /// Creates the texture on first use, when there is sure to be a GL context.
+    void createTexture() const;
+
     int m_Width;
     int m_Height;
     std::vector<glm::vec4> m_Pixels;
-    // Created on first draw, when there is sure to be a GL context.
     mutable GLuint m_Texture = 0;
     mutable bool m_Dirty = true;
 };

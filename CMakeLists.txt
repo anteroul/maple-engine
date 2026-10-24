@@ -38,6 +38,22 @@ else()
     target_link_libraries(maple_miniaudio PUBLIC ${CMAKE_DL_LIBS} pthread m)
 endif()
 
+# Embeds a shader file into the target as a header, generated/Shaders/<file>.h,
+# that defines the string NAME. Editing the shader rebuilds what includes it.
+function(maple_embed_shader target source name)
+    get_filename_component(file "${source}" NAME)
+    set(header "${CMAKE_BINARY_DIR}/generated/Shaders/${file}.h")
+    add_custom_command(
+            OUTPUT "${header}"
+            COMMAND ${CMAKE_COMMAND} -DSOURCE=${CMAKE_CURRENT_SOURCE_DIR}/${source}
+                    -DOUTPUT=${header} -DNAME=${name} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/EmbedShader.cmake
+            DEPENDS "${source}" cmake/EmbedShader.cmake
+            COMMENT "Embedding ${source}"
+            VERBATIM)
+    target_sources(${target} PRIVATE "${header}")
+    target_include_directories(${target} PRIVATE "${CMAKE_BINARY_DIR}/generated")
+endfunction()
+
 # The engine, shared by the demo and the games built on it.
 add_library(MapleEngineCore STATIC
         src/App.cpp
@@ -65,6 +81,7 @@ add_library(MapleEngineCore STATIC
 target_include_directories(MapleEngineCore PUBLIC
         src ${OPENGL_INCLUDE_DIR} ${GLEW_INCLUDE_DIRS} ${GLFW_INCLUDE_DIRS})
 target_link_libraries(MapleEngineCore PUBLIC ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} -lGLX -lglfw -lbox2d maple_miniaudio)
+maple_embed_shader(MapleEngineCore src/Shaders/particles.comp PARTICLES_COMP)
 
 # The engine's sandbox scene.
 add_executable(MapleEngine
@@ -99,8 +116,10 @@ add_executable(MapleSandbox
         games/sandbox/main.cpp
         games/sandbox/SandboxController.cpp
         games/sandbox/SandboxScene.cpp
+        games/sandbox/CellColourer.cpp
 )
 target_link_libraries(MapleSandbox PRIVATE MapleEngineCore MapleSandboxRules)
+maple_embed_shader(MapleSandbox games/sandbox/shaders/cells.comp CELLS_COMP)
 
 if(MAPLE_BUILD_TESTS)
     # The tests never open a window, so they run without a display.

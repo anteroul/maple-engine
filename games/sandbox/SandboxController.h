@@ -2,6 +2,7 @@
 #define MAPLESANDBOX_SANDBOXCONTROLLER_H
 
 #include "Simulation.h"
+#include "CellColourer.h"
 #include "ECS/Component.h"
 #include "Effects/ParticleSystem.h"
 #include "Rendering/PixelCanvas.h"
@@ -71,6 +72,7 @@ private:
 
     sandbox::Simulation m_Simulation;
     PixelCanvas m_Canvas;
+    CellColourer m_Colourer;
 
     std::vector<Torch> m_Torches;
     ParticleSystem m_BlastFire;

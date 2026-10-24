@@ -1,5 +1,6 @@
 #include "World.h"
 #include "ECS/Components/Glow.h"
+#include "Rendering/ShaderProgram.h"
 
 World World::gameInstance;
 
@@ -158,6 +159,8 @@ void World::render(GLFWwindow *window) {
 
 void World::releaseRendering() {
     postProcess.release();
+    // Anything still holding GL objects is destroyed after the context.
+    markRenderingReleased();
 }
 
 void World::addEntity(Entity *entity) {

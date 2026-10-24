@@ -43,7 +43,7 @@ PixelCanvas::PixelCanvas(int width, int height)
 
 PixelCanvas::~PixelCanvas()
 {
-    if (m_Texture)
+    if (m_Texture && !renderingReleased())
         glDeleteTextures(1, &m_Texture);
 }
 
@@ -53,24 +53,38 @@ void PixelCanvas::fill(const glm::vec4& colour)
     m_Dirty = true;
 }
 
+void PixelCanvas::createTexture() const
+{
+    if (m_Texture)
+        return;
+
+    glGenTextures(1, &m_Texture);
+    glBindTexture(GL_TEXTURE_2D, m_Texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_Width, m_Height, 0, GL_RGBA, GL_FLOAT, nullptr);
+    // Nearest, so every pixel stays a crisp square however large it is drawn.
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    m_Dirty = true;
+}
+
+void PixelCanvas::bindImage(GLuint unit)
+{
+    createTexture();
+    glBindImageTexture(unit, m_Texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+    // The GPU's pixels win over the stale ones on the CPU.
+    m_Dirty = false;
+}
+
 void PixelCanvas::draw(glm::vec2 bottomLeft, glm::vec2 size) const
 {
     const GLuint program = canvasProgram();
     if (program == 0)
         return;
 
-    if (!m_Texture)
-    {
-        glGenTextures(1, &m_Texture);
-        glBindTexture(GL_TEXTURE_2D, m_Texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_Width, m_Height, 0, GL_RGBA, GL_FLOAT, nullptr);
-        // Nearest, so every pixel stays a crisp square however large it is drawn.
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        m_Dirty = true;
-    }
+    createTexture();
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_Texture);

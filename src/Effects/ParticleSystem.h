@@ -3,6 +3,7 @@
 
 #include <glm/glm.hpp>
 #include <cstdint>
+#include <memory>
 #include <random>
 #include <vector>
 
@@ -71,11 +72,22 @@ struct ParticleEffect {
 ///
 /// Use it directly from a component that draws several effects, or through
 /// the ParticleEmitter component to attach one to an entity.
+///
+/// Where compute shaders are available (OpenGL 4.3), particles live on the
+/// GPU: the CPU only works out where new ones start, and a compute shader
+/// steps them all and builds the quads they are drawn with. Elsewhere they
+/// are stepped and drawn on the CPU. Both look the same.
 class ParticleSystem {
 public:
     explicit ParticleSystem(const ParticleEffect& effect = ParticleEffect{},
                             std::uint32_t seed = std::random_device{}());
+    ~ParticleSystem();
+    // Owns GL buffers, so it can be moved but not copied.
+    ParticleSystem(ParticleSystem&&) noexcept;
+    ParticleSystem& operator=(ParticleSystem&&) noexcept;
 
+    /// Takes effect from the next update. Changing maxParticles clears the
+    /// particles on the GPU, which has to make room for the new number.
     void setEffect(const ParticleEffect& effect) { m_Effect = effect; }
     const ParticleEffect& getEffect() const { return m_Effect; }
 
@@ -88,23 +100,40 @@ public:
     /// Draw with the current projection, over whatever is already drawn.
     void render() const;
 
-    void clear() { m_Particles.clear(); }
-    std::size_t size() const { return m_Particles.size(); }
+    void clear();
+    /// Live particles.
+    std::size_t size() const;
 
 private:
+    /// Laid out as the compute shader reads it (std430), so the GPU path can
+    /// upload new particles as they are.
     struct Particle {
         glm::vec2 position;
         glm::vec2 velocity;
         float age;
         float lifetime;
         float scale;
+        /// Picks the particle's turbulence on the GPU.
+        std::uint32_t seed;
     };
+    static_assert(sizeof(Particle) == 32, "must match struct Particle in src/Shaders/particles.comp");
 
-    void spawn(glm::vec2 position);
+    struct Gpu;
+
+    /// Decides, on first use, whether particles go to the GPU.
+    bool onGpu() const;
+    Particle makeParticle(glm::vec2 position);
     float random(float min, float max);
 
+    void updateOnCpu(float deltaTime);
+    void renderOnCpu() const;
+
     ParticleEffect m_Effect;
+    /// The particles, when they are on the CPU.
     std::vector<Particle> m_Particles;
+    /// Everything for the GPU path. Empty until the first use decides.
+    mutable std::unique_ptr<Gpu> m_Gpu;
+    mutable bool m_Decided = false;
     /// Fraction of a particle left over from the last emit(), so that low
     /// rates at high frame rates still emit.
     float m_EmitCarry = 0.f;

@@ -160,6 +160,20 @@ starting point: green fire is `fire()` with different colours.
 
 ![An oil slick burning on a pool of water](docs/sandbox-oil-fire.png)
 
+## Compute shaders
+
+Where OpenGL 4.3 is available, particles run on the GPU: the CPU only works
+out where new ones start, and a compute shader (`src/Shaders/particles.comp`)
+moves them all and builds the quads they are drawn with. The sandbox colours
+its pixels the same way (`games/sandbox/shaders/cells.comp`). Elsewhere, macOS
+included, the engine prints a warning and does the same work on the CPU, and
+`MAPLE_NO_COMPUTE=1` forces that, to compare the two.
+
+Shader files are embedded into the executable at build time, so a game never
+has to find them at run time: `maple_embed_shader(<target> <file> <NAME>)` in
+`CMakeLists.txt` turns a file into `#include "Shaders/<file>.h"`, which
+defines `NAME` as its source.
+
 ## Audio
 
 `Audio::getInstance()` plays sound effects fire-and-forget, plus one looping

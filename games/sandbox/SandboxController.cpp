@@ -56,6 +56,8 @@ float noise(int x, int y, std::uint32_t t)
 
 /// What a cell looks like. Fire, lava and burning cells are brighter than
 /// white, which is what makes them glow with bloom on.
+///
+/// shaders/cells.comp does the same on the GPU: change one, change the other.
 glm::vec4 cellColour(const Cell& cell, int x, int y, std::uint32_t frame)
 {
     const float shade = (float)cell.shade / 255.f;
@@ -414,6 +416,10 @@ void SandboxController::showEvents()
 
 void SandboxController::refreshCanvas()
 {
+    if (m_Colourer.colour(m_Simulation, m_Frame, m_Canvas))
+        return;
+
+    // No compute shaders: colour every cell here instead.
     for (int y = 0; y < GRID_HEIGHT; ++y)
         for (int x = 0; x < GRID_WIDTH; ++x)
             m_Canvas.setPixel(x, y, cellColour(m_Simulation.at(x, y), x, y, m_Frame));

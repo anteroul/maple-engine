@@ -9,6 +9,8 @@
 Makefile
 MapleEngine
 *.cmake
+# The scripts in cmake/ are the project's own, not generated.
+!/cmake/*.cmake
 CMakeCache.txt
 /Testing/
 MapleTetris

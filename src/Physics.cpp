@@ -1,5 +1,5 @@
 #include "Physics.h"
-#include "ECS/Components/RigidBody.h"
+
 
 Physics::Physics(b2Vec2 gravity) : accumulator(0.0)
 {

@@ -1,6 +1,8 @@
 # MapleEngine
 2D Game Engine with ECS. The engine uses Box2D for physics and OpenGL for rendering.
 
+![A gunpowder stash going off in Maple Sandbox](docs/sandbox-explosion.png)
+
 ## Installation:
 Install required dependencies:
 - Ubuntu/Debian: `apt install build-essential cmake libgl-dev libglm-dev libglew-dev libglfw3-dev`
@@ -156,6 +158,8 @@ sparks.burst({x, y}, 40);   // then sparks.update(dt) and sparks.render() each f
 Every number in a `ParticleEffect` can be changed, so a preset is only a
 starting point: green fire is `fire()` with different colours.
 
+![An oil slick burning on a pool of water](docs/sandbox-oil-fire.png)
+
 ## Audio
 
 `Audio::getInstance()` plays sound effects fire-and-forget, plus one looping
@@ -184,6 +188,8 @@ does nothing, so games never need to check first.
 guideline: SRS rotation with wall kicks, a 7-bag randomiser, hold, a
 three-piece preview, a ghost piece, lock delay and guideline scoring. Cleared
 rows break up into Box2D bodies that tumble off the board.
+
+![Maple Tetris](docs/tetris.png)
 
 ```
 ./build/MapleTetris        # or: nix run .#tetris
@@ -219,6 +225,8 @@ pixel is simulated: sand piles up, water finds its level, oil floats on it,
 fire spreads through wood and oil and leaves smoke and ash, gunpowder chains,
 water cools lava to stone and boils to steam, and steam that cools rains back
 down. Torches and explosions add particle fire, smoke and sparks on top.
+
+![The hut burning down and the ledge giving way under its sand](docs/sandbox-burning.png)
 
 ```
 ./build/MapleSandbox       # or: nix run .#sandbox

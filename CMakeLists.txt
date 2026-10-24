@@ -53,6 +53,10 @@ add_library(MapleEngineCore STATIC
         src/ECS/Components/UserInput.cpp
         src/ECS/Components/Shader.cpp
         src/ECS/Rendering/MeshGPU.cpp
+        src/Rendering/PostProcess.cpp
+        src/Rendering/ShaderProgram.cpp
+        src/Rendering/PixelCanvas.cpp
+        src/Effects/ParticleSystem.cpp
         src/ECS/Geometry/SphereGeometry.cpp
         src/ECS/Geometry/BoxGeometry.cpp
 )
@@ -81,6 +85,23 @@ add_executable(MapleTetris
 )
 target_link_libraries(MapleTetris PRIVATE MapleEngineCore MapleTetrisRules)
 
+# Like the Tetris rules, the falling sand simulation stands alone.
+add_library(MapleSandboxRules STATIC
+        games/sandbox/Simulation.cpp
+        games/sandbox/Level.cpp
+)
+target_include_directories(MapleSandboxRules PUBLIC games/sandbox)
+# Hundreds of thousands of cell updates a second: worth optimising even in
+# a debug build.
+target_compile_options(MapleSandboxRules PRIVATE $<$<NOT:$<CONFIG:Debug>>:-O2>)
+
+add_executable(MapleSandbox
+        games/sandbox/main.cpp
+        games/sandbox/SandboxController.cpp
+        games/sandbox/SandboxScene.cpp
+)
+target_link_libraries(MapleSandbox PRIVATE MapleEngineCore MapleSandboxRules)
+
 if(MAPLE_BUILD_TESTS)
     # The tests never open a window, so they run without a display.
     enable_testing()
@@ -88,4 +109,8 @@ if(MAPLE_BUILD_TESTS)
     add_executable(MapleTetrisTests tests/tetris_tests.cpp)
     target_link_libraries(MapleTetrisTests PRIVATE MapleTetrisRules)
     add_test(NAME tetris COMMAND MapleTetrisTests)
+
+    add_executable(MapleSandboxTests tests/sandbox_tests.cpp)
+    target_link_libraries(MapleSandboxTests PRIVATE MapleSandboxRules)
+    add_test(NAME sandbox COMMAND MapleSandboxTests)
 endif()

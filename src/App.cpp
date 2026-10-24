@@ -41,6 +41,7 @@ App::~App()
     glfwSetWindowShouldClose(window, true);
     // Stop the audio thread before the program starts tearing down statics.
     Audio::shutdown();
+    World::getInstance().releaseRendering();
     glfwTerminate();
     printf("%s \bSUCCESS: Application closed successfully.\n", SUCCESS);
 }

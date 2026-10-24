@@ -1,4 +1,5 @@
 #include "World.h"
+#include "ECS/Components/Glow.h"
 
 World World::gameInstance;
 
@@ -20,6 +21,10 @@ void World::setClearColour(float r, float g, float b) {
     clearColour[0] = r;
     clearColour[1] = g;
     clearColour[2] = b;
+}
+
+void World::setBloom(const BloomSettings& settings) {
+    postProcess.setSettings(settings);
 }
 
 /// Build the scene and initialize all entities
@@ -52,24 +57,11 @@ void World::update(GLFWwindow *window, float deltaTime) {
         entity->syncTransform();
 }
 
-/// Point the viewport and projection at the scene's view.
-///
-/// Without a view the scene draws straight in normalised device coordinates
-/// over the whole framebuffer. With one, the largest viewport that keeps the
-/// view's aspect ratio is centred in the window, so resizing letterboxes the
-/// scene instead of stretching it.
-void World::applyView(GLFWwindow *window) const {
-    int width, height;
-    glfwGetFramebufferSize(window, &width, &height);
-
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-
-    if (!view || width <= 0 || height <= 0) {
-        glViewport(0, 0, width, height);
-        glMatrixMode(GL_MODELVIEW);
-        return;
-    }
+/// The largest viewport that keeps the view's aspect ratio, centred in the
+/// framebuffer. Without a view, the whole framebuffer.
+World::Viewport World::viewportFor(int width, int height) const {
+    if (!view || width <= 0 || height <= 0)
+        return {0, 0, width, height};
 
     const float viewAspect = (view->right - view->left) / (view->top - view->bottom);
     int viewportWidth = width;
@@ -80,14 +72,67 @@ void World::applyView(GLFWwindow *window) const {
     else
         viewportHeight = (int)((float)width / viewAspect);
 
-    glViewport((width - viewportWidth) / 2, (height - viewportHeight) / 2,
-               viewportWidth, viewportHeight);
-    glOrtho(view->left, view->right, view->bottom, view->top, -1.0, 1.0);
+    return {(width - viewportWidth) / 2, (height - viewportHeight) / 2,
+            viewportWidth, viewportHeight};
+}
+
+/// Point the viewport and projection at the scene's view.
+///
+/// Without a view the scene draws straight in normalised device coordinates
+/// over the whole framebuffer. With one, the largest viewport that keeps the
+/// view's aspect ratio is centred in the window, so resizing letterboxes the
+/// scene instead of stretching it.
+void World::applyView(GLFWwindow *window) const {
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
+
+    const Viewport viewport = viewportFor(width, height);
+    glViewport(viewport.x, viewport.y, viewport.width, viewport.height);
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    if (view && width > 0 && height > 0)
+        glOrtho(view->left, view->right, view->bottom, view->top, -1.0, 1.0);
     glMatrixMode(GL_MODELVIEW);
 }
 
+bool World::getCursorPosition(GLFWwindow *window, b2Vec2 &position) const {
+    int windowWidth, windowHeight, width, height;
+    double cursorX, cursorY;
+    glfwGetWindowSize(window, &windowWidth, &windowHeight);
+    glfwGetFramebufferSize(window, &width, &height);
+    glfwGetCursorPos(window, &cursorX, &cursorY);
+
+    if (windowWidth <= 0 || windowHeight <= 0 || width <= 0 || height <= 0)
+        return false;
+
+    // The cursor is in window coordinates, measured down from the top, and
+    // the viewport in framebuffer pixels, which differ on high DPI screens.
+    const float x = (float)(cursorX * width / windowWidth);
+    const float y = (float)((windowHeight - cursorY) * height / windowHeight);
+
+    const Viewport viewport = viewportFor(width, height);
+    const float u = (x - (float)viewport.x) / (float)viewport.width;
+    const float v = (y - (float)viewport.y) / (float)viewport.height;
+
+    if (view)
+        position = {view->left + u * (view->right - view->left),
+                    view->bottom + v * (view->top - view->bottom)};
+    else
+        position = {u * 2.f - 1.f, v * 2.f - 1.f};
+    return true;
+}
+
 /// Render all entities
+///
+/// With bloom on, the scene goes to an offscreen buffer first. Glowing
+/// entities are then drawn once more, into the glow buffer, before the two
+/// are blurred together and drawn to the window.
 void World::render(GLFWwindow *window) {
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
+    const bool postProcessing = postProcess.beginScene(width, height);
+
     glClearColor(clearColour[0], clearColour[1], clearColour[2], 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -96,7 +141,23 @@ void World::render(GLFWwindow *window) {
     for (auto entity: entities)
         entity->render();
 
+    if (postProcessing) {
+        postProcess.beginGlow();
+
+        for (auto entity: entities) {
+            const Glow* glow = entity->getComponent<Glow>();
+            if (glow && glow->isEnabled())
+                postProcess.drawGlow(*entity, *glow);
+        }
+
+        postProcess.finish();
+    }
+
     glfwSwapBuffers(window);
+}
+
+void World::releaseRendering() {
+    postProcess.release();
 }
 
 void World::addEntity(Entity *entity) {

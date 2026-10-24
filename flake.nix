@@ -95,6 +95,7 @@
             runHook preInstall
             install -Dm755 MapleEngine $out/bin/MapleEngine
             install -Dm755 MapleTetris $out/bin/MapleTetris
+            install -Dm755 MapleSandbox $out/bin/MapleSandbox
             runHook postInstall
           '';
 
@@ -110,6 +111,12 @@
         apps.tetris = {
           type = "app";
           program = "${maple-engine}/bin/MapleTetris";
+        };
+
+        # nix run .#sandbox
+        apps.sandbox = {
+          type = "app";
+          program = "${maple-engine}/bin/MapleSandbox";
         };
 
         devShells.default = pkgs.mkShell {

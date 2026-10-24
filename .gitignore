@@ -13,4 +13,6 @@ CMakeCache.txt
 /Testing/
 MapleTetris
 MapleTetrisTests
+MapleSandbox
+MapleSandboxTests
 *.a

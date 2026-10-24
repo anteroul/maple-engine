@@ -3,6 +3,7 @@
 #include "../ECS/Components/SphereRenderer.h"
 #include "../ECS/Components/RigidBody.h"
 #include "../ECS/Components/BehaviourScript.h"
+#include "../ECS/Components/Glow.h"
 #include "../Scripts/MouseFollow.h"
 
 /// Spawn one object at the cursor on the frame the left button goes down.
@@ -29,7 +30,10 @@ static auto spawnOnClick()
                     );
 
             gameObject->addComponent(new RigidBody(*gameObject, 1.5f));
-            gameObject->addComponent(new SphereRenderer(*gameObject, 0.2f, 32, 16));
+            auto renderer = new SphereRenderer(*gameObject, 0.2f, 32, 16);
+            renderer->setColour({1.f, 0.55f, 0.15f});
+            gameObject->addComponent(renderer);
+            gameObject->addComponent(new Glow(*gameObject, 1.5f));
             game.addEntity(gameObject);
         }
 
@@ -39,6 +43,10 @@ static auto spawnOnClick()
 
 void createDemoScene(World& game) {
     b2WorldId world = game.getPhysics().getWorld();
+
+    BloomSettings bloom;
+    bloom.enabled = true;
+    game.setBloom(bloom);
 
     // The crosshair is driven straight from the mouse, so it is kinematic
     // rather than dynamic. Its shape is a sensor: it should mark where the
@@ -52,6 +60,7 @@ void createDemoScene(World& game) {
     cursor->addComponent(new BehaviourScript(*cursor, mouseFollow));
     cursor->addComponent(new BehaviourScript(*cursor, spawnOnClick()));
     cursor->addComponent(new BoxRenderer(*cursor, 0.04f, 0.04f, 1.0f));
+    cursor->addComponent(new Glow(*cursor, glm::vec3{0.4f, 0.8f, 1.f}, 3.f));
 
     auto ground = new Entity(world, b2Vec2{-2.f, -0.4f}, b2Vec2{2.f, -0.8f},
                              BodyType::Static);

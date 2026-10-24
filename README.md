@@ -99,6 +99,63 @@ int main()
 `World::addEntity()` and `World::destroyEntity()` are safe to call from inside
 a component's update: both take effect at the end of the current update.
 
+## Bloom and glow
+
+Bloom is off by default. Turned on, the scene is drawn into a floating point
+buffer, and whatever is brighter than the threshold spills light around it:
+
+```cpp
+BloomSettings bloom;
+bloom.enabled = true;
+bloom.threshold = 1.f;   // only colours brighter than white bloom
+bloom.intensity = 1.f;
+game.setBloom(bloom);
+
+renderer->setColour({4.f, 1.5f, 0.5f});  // brighter than white: blooms orange
+```
+
+A `Glow` component makes one entity shine however bright it is drawn, in its
+own colour or in one of its own:
+
+```cpp
+#include "ECS/Components/Glow.h"
+
+entity->addComponent(new Glow(*entity, 1.5f));                      // own colour
+entity->addComponent(new Glow(*entity, glm::vec3{0.4f, 0.8f, 1.f}, 3.f));
+```
+
+Bloom needs OpenGL 3.0. Without it the engine prints a warning and draws the
+scene as before.
+
+## Fire and smoke
+
+`Effects/ParticleEffects.h` has ready-made particle effects: `fire`, `smoke`,
+`embers`, `sparks` and `explosion`. Each takes the width of the effect in
+world units and scales the rest to match. Fire, embers and sparks are brighter
+than white, so they glow with bloom on.
+
+Attach one to an entity with a `ParticleEmitter`:
+
+```cpp
+#include "ECS/Components/ParticleEmitter.h"
+#include "Effects/ParticleEffects.h"
+
+// Components draw in the order they are added: smoke first, so the flame
+// shows through it.
+torch->addComponent(new ParticleEmitter(*torch, effects::smoke(0.4f), {0.f, 0.3f}));
+torch->addComponent(new ParticleEmitter(*torch, effects::fire(0.3f)));
+```
+
+or drive a `ParticleSystem` yourself, for one-off bursts:
+
+```cpp
+ParticleSystem sparks(effects::sparks(0.5f));
+sparks.burst({x, y}, 40);   // then sparks.update(dt) and sparks.render() each frame
+```
+
+Every number in a `ParticleEffect` can be changed, so a preset is only a
+starting point: green fire is `fire()` with different colours.
+
 ## Audio
 
 `Audio::getInstance()` plays sound effects fire-and-forget, plus one looping
@@ -154,3 +211,33 @@ lines (cyan) and level (orange). The window title spells them out too.
 
 The rules live in `games/tetris/TetrisGame.*`, with no engine dependencies, so
 `tests/tetris_tests.cpp` checks them headless.
+
+## Maple Sandbox
+
+`games/sandbox` is a falling sand playground in the style of Noita. Every
+pixel is simulated: sand piles up, water finds its level, oil floats on it,
+fire spreads through wood and oil and leaves smoke and ash, gunpowder chains,
+water cools lava to stone and boils to steam, and steam that cools rains back
+down. Torches and explosions add particle fire, smoke and sparks on top.
+
+```
+./build/MapleSandbox       # or: nix run .#sandbox
+```
+
+| Input                  | Action                                    |
+|------------------------|-------------------------------------------|
+| Left mouse             | Paint the selected material               |
+| Right mouse            | Erase, torches included                   |
+| 1 - 9, 0               | Sand, water, stone, wood, oil, gunpowder, lava, fire, smoke, steam |
+| [ / ], - / =           | Brush size                                |
+| T                      | Plant a torch                             |
+| E, middle mouse        | Explosion                                 |
+| Space, P               | Pause (painting still works)              |
+| R                      | Reset the level                           |
+| C                      | Clear everything                          |
+| B                      | Bloom on / off                            |
+| Esc                    | Quit                                      |
+
+The selected material is highlighted in the palette at the top and named in
+the window title. The rules live in `games/sandbox/Simulation.*`, with no
+engine dependencies, so `tests/sandbox_tests.cpp` checks them headless.

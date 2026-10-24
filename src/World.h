@@ -3,6 +3,7 @@
 
 #include "ECS/Entity.h"
 #include "Physics.h"
+#include "Rendering/PostProcess.h"
 #include <GLFW/glfw3.h>
 #include <algorithm>
 #include <functional>
@@ -27,11 +28,20 @@ public:
     /// in normalised device coordinates, -1 to 1 on both axes.
     void setView(float left, float right, float bottom, float top);
     void setClearColour(float r, float g, float b);
+    /// Where the mouse cursor is, in the world coordinates of the current
+    /// view. False while the window has no area.
+    bool getCursorPosition(GLFWwindow* window, b2Vec2& position) const;
+    /// Turn bloom on or off and tune it. Off by default. Glow components
+    /// need it on.
+    void setBloom(const BloomSettings& settings);
+    const BloomSettings& getBloom() const { return postProcess.getSettings(); }
 
     /// Game life cycle
     void initialize();
     void update(GLFWwindow* window, float deltaTime);
     void render(GLFWwindow* window);
+    /// Free GL resources the world holds. Runs before the context goes away.
+    void releaseRendering();
 
     /// Get 2D physics (in progress)
     Physics& getPhysics() { return physics; }
@@ -59,6 +69,7 @@ private:
     std::map<std::string, Entity*> names;
     std::map<std::string, std::list<Entity*>> tags;
     Physics physics;
+    PostProcess postProcess;
     SceneSetup sceneSetup;
 
     struct ViewBounds {
@@ -69,6 +80,11 @@ private:
 
     World();
 
+    struct Viewport {
+        int x, y, width, height;
+    };
+    /// The part of a framebuffer of this size the view is drawn into.
+    Viewport viewportFor(int width, int height) const;
     void applyView(GLFWwindow* window) const;
     /// Apply the additions and destructions queued during this update.
     void flushPendingEntities();

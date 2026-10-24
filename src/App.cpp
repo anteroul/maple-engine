@@ -21,6 +21,7 @@ App::App(unsigned int width, unsigned int height, const char* windowTitle, bool 
 
     glfwMakeContextCurrent(window);
     glfwSetCursorPosCallback(window, HandleMouseMotion);
+    glfwSetScrollCallback(window, HandleScroll);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
     // Input is polled once a frame. Sticky keys and buttons latch a press
     // until the next poll, so a tap shorter than a frame still registers.
@@ -104,6 +105,13 @@ void App::HandleMouseMotion(GLFWwindow *window, double xPos, double yPos)
     int width, height;
     glfwGetCursorPos(window, &xPos, &yPos);
     glfwGetWindowSize(window, &width, &height);
+}
+
+/// Scrolling only arrives as events, so it is collected for components to
+/// read with World::getScroll().
+void App::HandleScroll(GLFWwindow*, double xOffset, double yOffset)
+{
+    World::getInstance().addScroll(xOffset, yOffset);
 }
 
 void App::ThrowError(int error, const char *description)

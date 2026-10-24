@@ -31,6 +31,12 @@ public:
     /// Where the mouse cursor is, in the world coordinates of the current
     /// view. False while the window has no area.
     bool getCursorPosition(GLFWwindow* window, b2Vec2& position) const;
+    /// How far the mouse wheel or touchpad scrolled since the last update:
+    /// y is positive scrolling up, x positive scrolling right. A wheel moves
+    /// in steps of 1, a touchpad in fractions.
+    b2Vec2 getScroll() const { return scroll; }
+    /// Called by the App as scroll events arrive.
+    void addScroll(double x, double y);
     /// Turn bloom on or off and tune it. Off by default. Glow components
     /// need it on.
     void setBloom(const BloomSettings& settings);
@@ -77,6 +83,7 @@ private:
     };
     std::optional<ViewBounds> view;
     float clearColour[3] = {0.f, 0.f, 0.f};
+    b2Vec2 scroll{0.f, 0.f};
 
     World();
 

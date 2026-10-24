@@ -56,6 +56,14 @@ void World::update(GLFWwindow *window, float deltaTime) {
 
     for (auto entity: entities)
         entity->syncTransform();
+
+    // Every component has seen this frame's scrolling.
+    scroll = b2Vec2{0.f, 0.f};
+}
+
+void World::addScroll(double x, double y) {
+    scroll.x += (float)x;
+    scroll.y += (float)y;
 }
 
 /// The largest viewport that keeps the view's aspect ratio, centred in the

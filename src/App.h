@@ -15,6 +15,7 @@ private:
     void RunApplication(World& game);
     bool ApplicationShouldClose();
     static void HandleMouseMotion(GLFWwindow* window, double xPos, double yPos);
+    static void HandleScroll(GLFWwindow* window, double xOffset, double yOffset);
     double newTime{};
     double deltaTime{};
     GLFWwindow* window;

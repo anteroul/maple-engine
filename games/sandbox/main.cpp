@@ -6,6 +6,7 @@
  *   Right mouse             erase (torches too)
  *   1 - 9, 0                sand, water, stone, wood, oil, gunpowder, lava,
  *                           fire, smoke, steam
+ *   Mouse wheel             next / previous material
  *   [ / ], - / =            brush size
  *   T                       plant a torch
  *   E, middle mouse         explosion

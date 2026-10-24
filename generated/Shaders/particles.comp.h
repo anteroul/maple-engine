@@ -1,0 +1,123 @@
+// Generated from particles.comp by cmake/EmbedShader.cmake. Edit the shader, not this.
+#pragma once
+
+inline constexpr const char PARTICLES_COMP[] = R"maple_shader(#version 430
+// Steps every particle of a ParticleSystem and writes the quad it is drawn
+// as, so the CPU never touches a particle after spawning it.
+//
+// One thread per particle slot. A slot whose particle has run out of life
+// (age >= lifetime, which a zeroed slot also is) gets a quad with no area,
+// so the draw call can always cover the whole buffer.
+
+layout(local_size_x = 256) in;
+
+struct Particle {
+    vec2 position;
+    vec2 velocity;
+    float age;
+    float lifetime;
+    float scale;
+    uint seed;
+};
+
+struct Vertex {
+    vec2 position;
+    vec2 uv;
+    vec4 colour;
+};
+
+layout(std430, binding = 0) buffer Particles { Particle particles[]; };
+layout(std430, binding = 1) writeonly buffer Vertices { Vertex vertices[]; };
+
+uniform uint u_Count;
+uniform uint u_Frame;
+/// 0 only rebuilds the quads, for particles spawned since the last step.
+uniform float u_DeltaTime;
+uniform vec2 u_Acceleration;
+uniform float u_Drag;
+uniform float u_Turbulence;
+uniform float u_SizeStart;
+uniform float u_SizeEnd;
+uniform float u_Stretch;
+uniform vec4 u_ColourStart;
+uniform vec4 u_ColourMiddle;
+uniform vec4 u_ColourEnd;
+
+/// A random number in [-1, 1] from a few integers.
+float random(uint a, uint b, uint c)
+{
+    uint h = a * 374761393u + b * 668265263u + c * 2246822519u;
+    h = (h ^ (h >> 13)) * 1274126177u;
+    h ^= h >> 16;
+    return float(h & 0xFFFFu) / 32767.5 - 1.0;
+}
+
+vec4 colourAt(float t)
+{
+    if (t < 0.5)
+        return mix(u_ColourStart, u_ColourMiddle, t * 2.0);
+    return mix(u_ColourMiddle, u_ColourEnd, (t - 0.5) * 2.0);
+}
+
+void writeQuad(uint index, vec2 p, vec2 along, vec2 across, vec4 colour)
+{
+    const vec2 corners[4] = vec2[4](p - along - across, p + along - across,
+                                    p + along + across, p - along + across);
+    const vec2 uvs[4] = vec2[4](vec2(0.0, 0.0), vec2(1.0, 0.0), vec2(1.0, 1.0), vec2(0.0, 1.0));
+    // Two triangles: 0 1 2 and 0 2 3.
+    const int order[6] = int[6](0, 1, 2, 0, 2, 3);
+    for (int i = 0; i < 6; ++i)
+        vertices[index * 6u + uint(i)] = Vertex(corners[order[i]], uvs[order[i]], colour);
+}
+
+void main()
+{
+    const uint index = gl_GlobalInvocationID.x;
+    if (index >= u_Count)
+        return;
+
+    Particle particle = particles[index];
+    if (particle.age >= particle.lifetime)
+    {
+        writeQuad(index, vec2(0.0), vec2(0.0), vec2(0.0), vec4(0.0));
+        return;
+    }
+
+    if (u_DeltaTime > 0.0)
+    {
+        vec2 push = vec2(0.0);
+        if (u_Turbulence > 0.0)
+            push = u_Turbulence * vec2(random(index, u_Frame, particle.seed),
+                                       random(index, u_Frame, particle.seed ^ 0x9E3779B9u));
+
+        particle.velocity += (u_Acceleration + push) * u_DeltaTime;
+        particle.velocity *= max(0.0, 1.0 - u_Drag * u_DeltaTime);
+        particle.position += particle.velocity * u_DeltaTime;
+        particle.age += u_DeltaTime;
+        particles[index] = particle;
+
+        if (particle.age >= particle.lifetime)
+        {
+            writeQuad(index, vec2(0.0), vec2(0.0), vec2(0.0), vec4(0.0));
+            return;
+        }
+    }
+
+    const float t = particle.age / particle.lifetime;
+    const float size = mix(u_SizeStart, u_SizeEnd, t) * particle.scale;
+
+    // Half extents along the particle's own axes: across, and along its
+    // direction of travel when stretched.
+    vec2 along = vec2(size / 2.0, 0.0);
+    vec2 across = vec2(0.0, size / 2.0);
+    const float speed = length(particle.velocity);
+    if (u_Stretch > 0.0 && speed > 1e-4)
+    {
+        const vec2 direction = particle.velocity / speed;
+        along = direction * (size + speed * u_Stretch) / 2.0;
+        across = vec2(-direction.y, direction.x) * size / 2.0;
+    }
+
+    writeQuad(index, particle.position, along, across, colourAt(t));
+}
+)maple_shader";

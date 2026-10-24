@@ -82,6 +82,8 @@ private:
     ParticleSystem m_Embers;
 
     int m_Selected = 0;
+    /// Scrolling not yet worth a whole step through the palette.
+    float m_ScrollCarry = 0.f;
     int m_BrushRadius = 4;
     bool m_Paused = false;
     float m_Accumulator = 0.f;

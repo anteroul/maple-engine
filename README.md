@@ -251,6 +251,7 @@ down. Torches and explosions add particle fire, smoke and sparks on top.
 | Left mouse             | Paint the selected material               |
 | Right mouse            | Erase, torches included                   |
 | 1 - 9, 0               | Sand, water, stone, wood, oil, gunpowder, lava, fire, smoke, steam |
+| Mouse wheel            | Next / previous material                  |
 | [ / ], - / =           | Brush size                                |
 | T                      | Plant a torch                             |
 | E, middle mouse        | Explosion                                 |

@@ -247,6 +247,14 @@ void SandboxController::handleInput(GLFWwindow* window)
         if (m_MaterialKeys[i].pressed(window))
             m_Selected = i;
 
+    // Scrolling down moves along the palette, up moves back, wrapping round.
+    // Touchpads scroll in fractions, so those add up to whole steps first.
+    m_ScrollCarry -= World::getInstance().getScroll().y;
+    const int steps = (int)m_ScrollCarry;
+    m_ScrollCarry -= (float)steps;
+    const int materials = (int)PALETTE.size();
+    m_Selected = ((m_Selected + steps) % materials + materials) % materials;
+
     if (m_BrushSmaller.pressed(window))
         m_BrushRadius = std::max(MIN_BRUSH, m_BrushRadius - 1);
     if (m_BrushLarger.pressed(window))

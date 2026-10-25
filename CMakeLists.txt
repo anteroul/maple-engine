@@ -179,36 +179,38 @@ add_executable(MapleSandbox
 target_link_libraries(MapleSandbox PRIVATE MapleEngineCore MapleSandboxRules)
 maple_embed_shader(MapleSandbox games/sandbox/shaders/cells.comp CELLS_COMP)
 
-# Maple Doom. The rules stand alone, like the other games'. The software
-# renderer and its art need images but no GL, so they can draw frames
-# headless too.
-add_library(MapleDoomRules STATIC
-        games/doom/Map.cpp
-        games/doom/Raycast.cpp
-        games/doom/Game.cpp
-        games/doom/Levels.cpp
-)
-target_include_directories(MapleDoomRules PUBLIC games/doom)
+# Maple Doom. It is not in git, so it is only built where its sources are on
+# disk. The rules stand alone, like the other games'. The software renderer
+# and its art need images but no GL, so they can draw frames headless too.
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/games/doom/main.cpp)
+    add_library(MapleDoomRules STATIC
+            games/doom/Map.cpp
+            games/doom/Raycast.cpp
+            games/doom/Game.cpp
+            games/doom/Levels.cpp
+    )
+    target_include_directories(MapleDoomRules PUBLIC games/doom)
 
-add_library(MapleDoomView STATIC
-        games/doom/Art.cpp
-        games/doom/Font.cpp
-        games/doom/Renderer.cpp
-)
-target_link_libraries(MapleDoomView PUBLIC MapleDoomRules MapleImage)
+    add_library(MapleDoomView STATIC
+            games/doom/Art.cpp
+            games/doom/Font.cpp
+            games/doom/Renderer.cpp
+    )
+    target_link_libraries(MapleDoomView PUBLIC MapleDoomRules MapleImage)
 
-# The renderer draws every pixel of every frame on the CPU, and the rules run
-# the monsters: both are worth optimising even in a debug build.
-target_compile_options(MapleDoomRules PRIVATE $<$<NOT:$<CONFIG:Debug>>:-O2>)
-target_compile_options(MapleDoomView PRIVATE $<$<NOT:$<CONFIG:Debug>>:-O2>)
+    # The renderer draws every pixel of every frame on the CPU, and the rules
+    # run the monsters: both are worth optimising even in a debug build.
+    target_compile_options(MapleDoomRules PRIVATE $<$<NOT:$<CONFIG:Debug>>:-O2>)
+    target_compile_options(MapleDoomView PRIVATE $<$<NOT:$<CONFIG:Debug>>:-O2>)
 
-add_executable(MapleDoom
-        games/doom/main.cpp
-        games/doom/DoomController.cpp
-        games/doom/DoomScene.cpp
-        games/doom/DoomAudio.cpp
-)
-target_link_libraries(MapleDoom PRIVATE MapleEngineCore MapleDoomView)
+    add_executable(MapleDoom
+            games/doom/main.cpp
+            games/doom/DoomController.cpp
+            games/doom/DoomScene.cpp
+            games/doom/DoomAudio.cpp
+    )
+    target_link_libraries(MapleDoom PRIVATE MapleEngineCore MapleDoomView)
+endif()
 
 if(MAPLE_BUILD_TESTS)
     # The tests never open a window, so they run without a display.
@@ -222,7 +224,9 @@ if(MAPLE_BUILD_TESTS)
     target_link_libraries(MapleSandboxTests PRIVATE MapleSandboxRules)
     add_test(NAME sandbox COMMAND MapleSandboxTests)
 
-    add_executable(MapleDoomTests tests/doom_tests.cpp)
-    target_link_libraries(MapleDoomTests PRIVATE MapleDoomRules)
-    add_test(NAME doom COMMAND MapleDoomTests)
+    if(TARGET MapleDoomRules AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tests/doom_tests.cpp)
+        add_executable(MapleDoomTests tests/doom_tests.cpp)
+        target_link_libraries(MapleDoomTests PRIVATE MapleDoomRules)
+        add_test(NAME doom COMMAND MapleDoomTests)
+    endif()
 endif()

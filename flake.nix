@@ -98,7 +98,6 @@
             install -Dm755 MapleEngine $out/bin/MapleEngine
             install -Dm755 MapleTetris $out/bin/MapleTetris
             install -Dm755 MapleSandbox $out/bin/MapleSandbox
-            install -Dm755 MapleDoom $out/bin/MapleDoom
 
             # Each window names itself after its .desktop file, which is
             # where Wayland desktops find its icon.
@@ -126,12 +125,6 @@
         apps.sandbox = {
           type = "app";
           program = "${maple-engine}/bin/MapleSandbox";
-        };
-
-        # nix run .#doom
-        apps.doom = {
-          type = "app";
-          program = "${maple-engine}/bin/MapleDoom";
         };
 
         devShells.default = pkgs.mkShell {

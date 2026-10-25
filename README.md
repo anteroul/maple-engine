@@ -104,7 +104,7 @@ a component's update: both take effect at the end of the current update.
 Every window shows the Maple Engine leaf, `docs/maple-engine.png`, built into
 the executable. Wayland gives windows no way to set their own icon, so there
 the desktop finds it through the window's application id, its title in lower
-case with dashes ("Maple Doom" is `maple-doom`), and the matching `.desktop`
+case with dashes ("Maple Tetris" is `maple-tetris`), and the matching `.desktop`
 file in `packaging/`. `nix profile install` puts those and the icon in place.
 
 ## Bloom and glow
@@ -226,122 +226,7 @@ frame.save("frame.png");
 `PixelCanvas::upload(image)` puts a whole image on screen in one go: the way to
 show frames drawn by a software renderer.
 
-## Maple Tetris
+## Games
 
-`games/tetris` is a Tetris clone built on the engine. It follows the modern
-guideline: SRS rotation with wall kicks, a 7-bag randomiser, hold, a
-three-piece preview, a ghost piece, lock delay and guideline scoring. Cleared
-rows break up into Box2D bodies that tumble off the board.
-
-![Maple Tetris](docs/tetris.png)
-
-```
-./build/MapleTetris        # or: nix run .#tetris
-```
-
-| Key                    | Action                      |
-|------------------------|-----------------------------|
-| Left / Right, A / D    | Move                        |
-| Down, S                | Soft drop                   |
-| Space                  | Hard drop                   |
-| Up, X, W               | Rotate clockwise            |
-| Z, Ctrl                | Rotate counter-clockwise    |
-| C, Shift               | Hold                        |
-| P                      | Pause                       |
-| R                      | Restart                     |
-| M                      | Music on / off              |
-| Esc                    | Quit                        |
-
-All of its sound, including a chiptune arrangement of Korobeiniki (the
-public-domain folk song behind the Tetris theme), is synthesized at start up.
-The music speeds up a little with each level.
-
-The side panel shows the next pieces, the held piece, and the score (white),
-lines (cyan) and level (orange). The window title spells them out too.
-
-The rules live in `games/tetris/TetrisGame.*`, with no engine dependencies, so
-`tests/tetris_tests.cpp` checks them headless.
-
-## Maple Sandbox
-
-`games/sandbox` is a falling sand playground in the style of Noita. Every
-pixel is simulated: sand piles up, water finds its level, oil floats on it,
-fire spreads through wood and oil and leaves smoke and ash, gunpowder chains,
-water cools lava to stone and boils to steam, and steam that cools rains back
-down. Torches and explosions add particle fire, smoke and sparks on top.
-
-![The hut burning down and the ledge giving way under its sand](docs/sandbox-burning.png)
-
-```
-./build/MapleSandbox       # or: nix run .#sandbox
-```
-
-| Input                  | Action                                    |
-|------------------------|-------------------------------------------|
-| Left mouse             | Paint the selected material               |
-| Right mouse            | Erase, torches included                   |
-| 1 - 9, 0               | Sand, water, stone, wood, oil, gunpowder, lava, fire, smoke, steam |
-| Mouse wheel            | Next / previous material                  |
-| [ / ], - / =           | Brush size                                |
-| T                      | Plant a torch                             |
-| E, middle mouse        | Explosion                                 |
-| Space, P               | Pause (painting still works)              |
-| R                      | Reset the level                           |
-| C                      | Clear everything                          |
-| B                      | Bloom on / off                            |
-| Esc                    | Quit                                      |
-
-The selected material is highlighted in the palette at the top and named in
-the window title. The rules live in `games/sandbox/Simulation.*`, with no
-engine dependencies, so `tests/sandbox_tests.cpp` checks them headless.
-
-## Maple Doom
-
-`games/doom` is a first person shooter in the style of Doom, drawn by a
-raycaster in software. Two levels, an outpost and a hell keep, with doors,
-pools of nukage, open sky, lamps that light the rooms around them and an exit
-switch at the end of each.
-
-![An imp winds up a fireball in the outpost's courtyard](docs/doom.png)
-
-```
-./build/MapleDoom          # or: nix run .#doom
-```
-
-| Input                  | Action                                    |
-|------------------------|-------------------------------------------|
-| W A S D, arrow keys    | Move and strafe, the arrows turn          |
-| Mouse                  | Turn                                      |
-| Shift                  | Run                                       |
-| Left mouse, Ctrl       | Fire                                      |
-| E, Space               | Open doors, flip the exit switch          |
-| 1 - 5, mouse wheel     | Fist, pistol, shotgun, chaingun, rocket launcher |
-| Tab                    | Automap                                   |
-| M                      | Music on / off                            |
-| Esc                    | Quit                                      |
-
-Troopers shoot, imps throw fireballs and claw, demons charge and bite, and a
-knight guards the end of the second level. Monsters see what is in front of
-them and hear gunfire through open doors, find their way round walls, open
-doors, and turn on each other when caught in the crossfire. Barrels explode
-when shot, and set off their neighbours.
-
-For each column of the screen, a ray walks the map's grid until it meets a
-wall, and that column of the wall is drawn as tall as the wall is near. Floors
-and ceilings are drawn a row at a time, and monsters, items and effects are
-billboards hidden column by column behind nearer walls. Everything dims with
-distance and with the light baked into the map.
-
-Every texture, sprite and sound is drawn or synthesized at start up, so the
-game needs no files. Any picture can still be replaced by a PNG:
-
-```
-./build/MapleDoom --dump-art art      # save every picture, to start from
-./build/MapleDoom --art art           # play with whatever is in art/
-./build/MapleDoom --screenshot shot.png
-```
-
-Sprites are see-through wherever their alpha is below one half. The rules live
-in `games/doom/Game.*`, `Map.*` and `Raycast.*`, with no engine dependencies,
-so `tests/doom_tests.cpp` checks them headless. The levels are drawn in ASCII
-in `games/doom/Levels.cpp`, with the legend in `Map.h`.
+`games/` holds Maple Tetris and Maple Sandbox. See
+[games/README.md](games/README.md) for how to run and play them.

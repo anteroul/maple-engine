@@ -22,3 +22,8 @@ MapleSandboxTests
 MapleDoom
 MapleDoomTests
 *.a
+# Maple Doom stays local.
+/games/doom/
+/tests/doom_tests.cpp
+/docs/doom.png
+/packaging/maple-doom.desktop

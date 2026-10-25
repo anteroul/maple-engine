@@ -1,8 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Maple Doom
-Comment=A Doom style shooter drawn by a raycaster
-Exec=MapleDoom
-Icon=maple-engine
-Terminal=false
-Categories=Game;

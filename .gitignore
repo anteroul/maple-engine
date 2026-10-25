@@ -1,4 +1,5 @@
 # Project exclude paths
+/.cache/
 /.idea/
 /.vscode/
 /cmake-build-debug/
@@ -12,9 +13,12 @@ MapleEngine
 # The scripts in cmake/ are the project's own, not generated.
 !/cmake/*.cmake
 CMakeCache.txt
+compile_commands.json
 /Testing/
 MapleTetris
 MapleTetrisTests
 MapleSandbox
 MapleSandboxTests
+MapleDoom
+MapleDoomTests
 *.a

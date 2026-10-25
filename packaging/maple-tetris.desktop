@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Maple Tetris
+Comment=Tetris, built on Maple Engine
+Exec=MapleTetris
+Icon=maple-engine
+Terminal=false
+Categories=Game;

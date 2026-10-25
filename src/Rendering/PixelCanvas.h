@@ -3,7 +3,10 @@
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>
+#include <cstdint>
 #include <vector>
+
+struct Image;
 
 /// A grid of pixels, written from the CPU and drawn as one textured rectangle
 /// in world space. For pixel simulations, minimaps, procedural images.
@@ -38,6 +41,13 @@ public:
     /// replaces the pixels set from the CPU until the next setPixel or fill.
     void bindImage(GLuint unit);
 
+    /// Replace every pixel with `image`, which must be the canvas's size, and
+    /// send it to the GPU straight away. For pictures drawn in full every
+    /// frame, such as a software renderer's, this skips the floating point
+    /// pixels altogether. Like bindImage, what it uploads stays until the next
+    /// setPixel or fill.
+    void upload(const Image& image);
+
 private:
     /// Creates the texture on first use, when there is sure to be a GL context.
     void createTexture() const;
@@ -45,6 +55,8 @@ private:
     int m_Width;
     int m_Height;
     std::vector<glm::vec4> m_Pixels;
+    /// upload()'s rows, turned bottom up to match the texture.
+    std::vector<std::uint32_t> m_Flipped;
     mutable GLuint m_Texture = 0;
     mutable bool m_Dirty = true;
 };

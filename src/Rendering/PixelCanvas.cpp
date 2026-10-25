@@ -1,6 +1,9 @@
 #include "PixelCanvas.h"
+#include "Image.h"
 #include "ShaderProgram.h"
+#include "../Log/msg.h"
 #include <algorithm>
+#include <cstdio>
 
 namespace {
 
@@ -75,6 +78,30 @@ void PixelCanvas::bindImage(GLuint unit)
     createTexture();
     glBindImageTexture(unit, m_Texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F);
     // The GPU's pixels win over the stale ones on the CPU.
+    m_Dirty = false;
+}
+
+void PixelCanvas::upload(const Image& image)
+{
+    if (image.width != m_Width || image.height != m_Height)
+    {
+        printf("%s \bWARNING: A %dx%d image does not fit a %dx%d pixel canvas\n", WARNING,
+               image.width, image.height, m_Width, m_Height);
+        return;
+    }
+
+    // The image's rows run top down, the texture's bottom up.
+    m_Flipped.resize(image.pixels.size());
+    for (int y = 0; y < m_Height; ++y)
+        std::copy_n(&image.pixels[(std::size_t)(m_Height - 1 - y) * m_Width], m_Width,
+                    &m_Flipped[(std::size_t)y * m_Width]);
+
+    createTexture();
+    glBindTexture(GL_TEXTURE_2D, m_Texture);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_Width, m_Height, GL_RGBA, GL_UNSIGNED_BYTE, m_Flipped.data());
+    glBindTexture(GL_TEXTURE_2D, 0);
+    // The uploaded pixels win over the stale ones on the CPU.
     m_Dirty = false;
 }
 

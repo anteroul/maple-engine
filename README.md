@@ -101,6 +101,12 @@ int main()
 `World::addEntity()` and `World::destroyEntity()` are safe to call from inside
 a component's update: both take effect at the end of the current update.
 
+Every window shows the Maple Engine leaf, `docs/maple-engine.png`, built into
+the executable. Wayland gives windows no way to set their own icon, so there
+the desktop finds it through the window's application id, its title in lower
+case with dashes ("Maple Doom" is `maple-doom`), and the matching `.desktop`
+file in `packaging/`. `nix profile install` puts those and the icon in place.
+
 ## Bloom and glow
 
 Bloom is off by default. Turned on, the scene is drawn into a floating point
@@ -196,6 +202,30 @@ Audio::getInstance().playMusic("music/theme.mp3", 0.5f);
 If no audio device can be opened, the engine prints a warning and every call
 does nothing, so games never need to check first.
 
+## Images
+
+`Rendering/Image.h` holds a picture in memory as 8 bit RGBA, for textures and
+sprites worked on by the CPU. It loads PNG, JPEG, BMP, TGA and GIF files and
+saves PNG, using [stb_image](https://github.com/nothings/stb). Like miniaudio,
+an installed copy of stb is used if `pkg-config stb` finds one, and otherwise
+CMake downloads it.
+
+```cpp
+#include "Rendering/Image.h"
+
+if (std::optional<Image> brick = Image::load("textures/brick.png"))
+{
+    // One pixel, packed as rgba() packs it: redOf(), alphaOf()... unpack it.
+    const std::uint32_t texel = brick->at(10, 20);
+}
+
+Image frame(320, 200, rgba(0, 0, 0));
+frame.save("frame.png");
+```
+
+`PixelCanvas::upload(image)` puts a whole image on screen in one go: the way to
+show frames drawn by a software renderer.
+
 ## Maple Tetris
 
 `games/tetris` is a Tetris clone built on the engine. It follows the modern
@@ -264,3 +294,54 @@ down. Torches and explosions add particle fire, smoke and sparks on top.
 The selected material is highlighted in the palette at the top and named in
 the window title. The rules live in `games/sandbox/Simulation.*`, with no
 engine dependencies, so `tests/sandbox_tests.cpp` checks them headless.
+
+## Maple Doom
+
+`games/doom` is a first person shooter in the style of Doom, drawn by a
+raycaster in software. Two levels, an outpost and a hell keep, with doors,
+pools of nukage, open sky, lamps that light the rooms around them and an exit
+switch at the end of each.
+
+![An imp winds up a fireball in the outpost's courtyard](docs/doom.png)
+
+```
+./build/MapleDoom          # or: nix run .#doom
+```
+
+| Input                  | Action                                    |
+|------------------------|-------------------------------------------|
+| W A S D, arrow keys    | Move and strafe, the arrows turn          |
+| Mouse                  | Turn                                      |
+| Shift                  | Run                                       |
+| Left mouse, Ctrl       | Fire                                      |
+| E, Space               | Open doors, flip the exit switch          |
+| 1 - 5, mouse wheel     | Fist, pistol, shotgun, chaingun, rocket launcher |
+| Tab                    | Automap                                   |
+| M                      | Music on / off                            |
+| Esc                    | Quit                                      |
+
+Troopers shoot, imps throw fireballs and claw, demons charge and bite, and a
+knight guards the end of the second level. Monsters see what is in front of
+them and hear gunfire through open doors, find their way round walls, open
+doors, and turn on each other when caught in the crossfire. Barrels explode
+when shot, and set off their neighbours.
+
+For each column of the screen, a ray walks the map's grid until it meets a
+wall, and that column of the wall is drawn as tall as the wall is near. Floors
+and ceilings are drawn a row at a time, and monsters, items and effects are
+billboards hidden column by column behind nearer walls. Everything dims with
+distance and with the light baked into the map.
+
+Every texture, sprite and sound is drawn or synthesized at start up, so the
+game needs no files. Any picture can still be replaced by a PNG:
+
+```
+./build/MapleDoom --dump-art art      # save every picture, to start from
+./build/MapleDoom --art art           # play with whatever is in art/
+./build/MapleDoom --screenshot shot.png
+```
+
+Sprites are see-through wherever their alpha is below one half. The rules live
+in `games/doom/Game.*`, `Map.*` and `Raycast.*`, with no engine dependencies,
+so `tests/doom_tests.cpp` checks them headless. The levels are drawn in ASCII
+in `games/doom/Levels.cpp`, with the legend in `Map.h`.

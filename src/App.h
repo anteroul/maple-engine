@@ -16,6 +16,8 @@ private:
     bool ApplicationShouldClose();
     static void HandleMouseMotion(GLFWwindow* window, double xPos, double yPos);
     static void HandleScroll(GLFWwindow* window, double xOffset, double yOffset);
+    /// Show the Maple Engine leaf in the title bar and task switcher.
+    void SetIcon();
     double newTime{};
     double deltaTime{};
     GLFWwindow* window;

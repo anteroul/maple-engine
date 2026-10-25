@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Maple Sandbox
+Comment=A falling sand playground
+Exec=MapleSandbox
+Icon=maple-engine
+Terminal=false
+Categories=Game;

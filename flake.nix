@@ -71,7 +71,9 @@
         # file names them, and pkg-config complains if it cannot find them.
         audioDeps = [ pkgs.miniaudio pkgs.libpulseaudio pkgs.alsa-lib pkgs.libjack2 pkgs.sndio ];
 
-        buildDeps = [ box2d3 pkgs.glfw pkgs.glew pkgs.libGL pkgs.glm ] ++ audioDeps;
+        # stb_image and stb_image_write, header only, for loading and saving
+        # images.
+        buildDeps = [ box2d3 pkgs.glfw pkgs.glew pkgs.libGL pkgs.glm pkgs.stb ] ++ audioDeps;
 
         maple-engine = pkgs.stdenv.mkDerivation {
           pname = "maple-engine";
@@ -96,6 +98,13 @@
             install -Dm755 MapleEngine $out/bin/MapleEngine
             install -Dm755 MapleTetris $out/bin/MapleTetris
             install -Dm755 MapleSandbox $out/bin/MapleSandbox
+            install -Dm755 MapleDoom $out/bin/MapleDoom
+
+            # Each window names itself after its .desktop file, which is
+            # where Wayland desktops find its icon.
+            mkdir -p $out/share/icons $out/share/applications
+            cp -r icons/hicolor $out/share/icons/
+            install -m644 ../packaging/*.desktop $out/share/applications/
             runHook postInstall
           '';
 
@@ -117,6 +126,12 @@
         apps.sandbox = {
           type = "app";
           program = "${maple-engine}/bin/MapleSandbox";
+        };
+
+        # nix run .#doom
+        apps.doom = {
+          type = "app";
+          program = "${maple-engine}/bin/MapleDoom";
         };
 
         devShells.default = pkgs.mkShell {

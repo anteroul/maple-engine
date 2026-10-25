@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Maple Engine
+Comment=The Maple Engine physics sandbox demo
+Exec=MapleEngine
+Icon=maple-engine
+Terminal=false
+Categories=Game;
